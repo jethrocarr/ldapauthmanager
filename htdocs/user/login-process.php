@@ -42,8 +42,8 @@ else
 {
 	// check & convert input
 	$instance	= NULL;
-	$username	= security_form_input("/^[A-Za-z0-9.]*$/", "username_ldapauthmanager", 4, "Please enter a username.");
-	$password	= security_form_input("/^\S*$/", "password_ldapauthmanager", 4, "Please enter a password.");
+	$username	= security_form_input("/^[A-Za-z0-9.]*$/", "username_ldapauthmanager", 1, "Please enter a username.");
+	$password	= security_form_input("/^\S*$/", "password_ldapauthmanager", 1, "Please enter a password.");
 
 
 	if ($_SESSION["error"]["message"])

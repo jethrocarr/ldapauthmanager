@@ -27,6 +27,7 @@
 */
 include("include/config.php");
 include("include/amberphplib/main.php");
+include("include/application/main.php");
 
 
 log_debug("index", "Starting index.php");
@@ -128,7 +129,7 @@ function obj_show(obj)
 
 			if (user_online())
 			{
-				print "<p style=\"font-size: 10px; color: #ffffff;\"><b>logged on as ". $_SESSION["user"]["name"] ." | <a style=\"color: #ffffff;\" href=\"index.php?page=user/options.php\">options</a> | <a style=\"color: #ffffff\" href=\"index.php?page=user/logout.php\">logout</a></b></p>";
+				print "<p style=\"font-size: 10px; color: #ffffff;\"><b>logged on as ". $_SESSION["user"]["name"] ." | <a style=\"color: #ffffff\" href=\"index.php?page=user/logout.php\">logout</a></b></p>";
 			}
 
 			?>

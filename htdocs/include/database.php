@@ -18,5 +18,4 @@ if (!$db_selected)
 	die("Unable to connect to DB:" . mysql_error());
 
 
-
 ?>

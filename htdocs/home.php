@@ -37,7 +37,25 @@ else
 		function render_html()
 		{
 			print "<h3>OVERVIEW</h3>";
-			print "<p>Welcome to <a target=\"new\" href=\"http://www.amberdms.com/ldapauthmanager\">LDAPAuthManager</a>, an open-source, PHP web-based LDAP authentication management interface designed to make it easy to manager users running on centralised authentication environments.</p>";
+			print "<p>Welcome to <a target=\"new\" href=\"http://www.amberdms.com/ldapauthmanager\">LDAPAuthManager</a>, an open-source, PHP web-based LDAP authentication management interface designed to make it easy to manage users running on centralised authentication environments.</p>";
+
+			if (user_permissions_get("users"))
+			{
+				print "User belongs to users<br>";
+			}
+			else
+			{
+				print "User does not belong to users<br>";
+			}
+
+			if (user_permissions_get("ldapadmins"))
+			{
+				print "User belongs to ldapadmins<br>";
+			}
+			else
+			{
+				print "User does not belong to ldapadmins.<br>";
+			}
 
 		}
 	}
