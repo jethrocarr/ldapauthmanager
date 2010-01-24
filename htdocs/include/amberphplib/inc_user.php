@@ -202,7 +202,7 @@ class user_auth
 		// authenticate the user
 		$userid = $this->login_authenticate($username, $password);
 
-		if ($userid != 1)
+		if ($userid <= 0)
 		{
 			if ($userid == "-2")
 			{
@@ -381,6 +381,97 @@ class user_auth
 
 		switch ($this->method)
 		{
+			case "ldaponly":
+				/*
+					LDAP-Only Authentication
+
+					In this situation we are authenticating against LDAP without using
+					any SQL tables for user information look ups.
+
+					This is used in applications that need whatever users exist in LDAP
+					to appear instantly in the application.
+
+					If you just want to authenticate against ldap, this is not what you
+					want, use the "ldap" authentication method instead.
+				*/
+
+				$obj_ldap = New ldap_query;
+
+				// use config files for LDAP server settings.
+				if ($GLOBALS["config"]["ldap_host"])
+				{
+					$obj_ldap->srvcfg["host"]		= $GLOBALS["config"]["ldap_host"];
+					$obj_ldap->srvcfg["port"]		= $GLOBALS["config"]["ldap_port"];
+					$obj_ldap->srvcfg["base_dn"]		= $GLOBALS["config"]["ldap_dn"];
+					$obj_ldap->srvcfg["user"]		= $GLOBALS["config"]["ldap_manager_user"];
+					$obj_ldap->srvcfg["password"]		= $GLOBALS["config"]["ldap_manager_pwd"];
+				}
+
+				// connect to LDAP server
+				if (!$obj_ldap->connect())
+				{
+					log_write("error", "user_auth", "An error occurred in the authentication backend, please contact your system administrator");
+					return -1;
+				}
+
+				// set base_dn to run user lookups in
+				$obj_ldap->srvcfg["base_dn"] = "ou=People,". $GLOBALS["config"]["ldap_dn"];
+
+				// run query against users
+				$obj_ldap->search("uid=$username", array("uidnumber", "userpassword"));
+
+				if ($obj_ldap->data_num_rows)
+				{
+					// make sure that both a UID and password exists
+					if ($obj_ldap->data[0]["userpassword"][0] && $obj_ldap->data[0]["uidnumber"][0])
+					{
+						if (preg_match("/^{SSHA}/", $obj_ldap->data[0]["userpassword"][0]))
+						{
+							// verify SSHA
+							$orig_hash	= base64_decode(substr($obj_ldap->data[0]["userpassword"][0], 6));
+							$orig_salt	= substr($orig_hash, 20);
+							$orig_hash	= substr($orig_hash, 0, 20);
+							$new_hash	= pack("H*", sha1($password . $orig_salt));
+
+							if ($orig_hash == $new_hash)
+							{
+								// successful authentication! :-D
+								log_debug("user_auth", "Authentication successful");
+
+								return $obj_ldap->data[0]["uidnumber"][0];
+							}
+							else
+							{
+								// incorrect password supplied
+								log_debug("user_auth", "Authentication failed due to incorrect password/username combination");
+								return 0;
+							}
+						}
+						else
+						{
+							// unknown password crypt format
+							log_debug("user_auth", "Unknown password crypt format!");
+							return -1;
+						}
+					}
+					else
+					{
+						log_debug("user_auth", "Required attributes not returned with entry.");
+						return -1;
+					}
+				}
+				else
+				{
+					// no matching user record found
+					log_debug("user_auth", "Authentication failed due to incorrect password/username combination");
+					return 0;
+				}
+
+				// unknown error
+				return -1;
+			break;
+
+
 			case "sql":
 			default:
 				/*
@@ -443,6 +534,7 @@ class user_auth
 					else
 					{
 						log_debug("user_auth", "Authentication failed due to incorrect password/username combination");
+						return 0;
 					}
 
 				} // end if user exists
@@ -629,6 +721,191 @@ class user_auth
 
 
 
+	/*
+		permissions_init
+
+		Loads all the permissions/privillages for the current user from the database
+		and saves the information into the running cache, eliminating the need for
+		multiple lookups.
+
+		This function is automatically executed when required by the permissions_get(type)
+		function.
+
+		The lookup occurs once for each page load, whilst this does place a bit more load
+		on the server, it's better than caching for the entire session, since otherwise
+		that cache could become stale if the user permissions get changed.
+
+		Returns
+		0		Failure
+		1		Success
+	*/
+	function permissions_init()
+	{
+		log_write("debug", "user_auth", "Executing permissions_init()");
+
+		// erase any existing cache
+		$GLOBALS["cache"]["user"]["perms"] = array();
+
+
+		// make sure the user is logged in
+		if (!$this->check_online())
+		{
+			return 0;
+		}
+
+		// run checks based on the method type
+		switch ($this->method)
+		{
+			case "ldaponly":
+				/*
+					LDAP-ONLY METHOD
+					With the ldaponly method we don't use the SQL database at all for user authentication or
+					permissions.
+
+					Instead we use the groups that the user belongs to as "permissions" and check if the user
+					belongs to the suitable group or not.
+				*/
+
+				$obj_ldap = New ldap_query;
+
+				// use config files for LDAP server settings.
+				if ($GLOBALS["config"]["ldap_host"])
+				{
+					$obj_ldap->srvcfg["host"]		= $GLOBALS["config"]["ldap_host"];
+					$obj_ldap->srvcfg["port"]		= $GLOBALS["config"]["ldap_port"];
+					$obj_ldap->srvcfg["base_dn"]		= $GLOBALS["config"]["ldap_dn"];
+					$obj_ldap->srvcfg["user"]		= $GLOBALS["config"]["ldap_manager_user"];
+					$obj_ldap->srvcfg["password"]		= $GLOBALS["config"]["ldap_manager_pwd"];
+				}
+
+				// connect to LDAP server
+				if (!$obj_ldap->connect())
+				{
+					log_write("error", "user_auth", "An error occurred in the authentication backend, please contact your system administrator");
+					return -1;
+				}
+
+				// set base_dn to run user lookups in
+				$obj_ldap->srvcfg["base_dn"] = "ou=Group,". $GLOBALS["config"]["ldap_dn"];
+
+				// run query against groups
+				$obj_ldap->search("cn=*", array("cn", "memberuid"));
+
+				if ($obj_ldap->data_num_rows)
+				{
+					// run through group entries
+					for ($i=0; $i < $obj_ldap->data["count"]; $i++)
+					{
+						// run through members and see if our user belongs
+						for ($j=0; $j < $obj_ldap->data[$i]["memberuid"]["count"]; $j++)
+						{
+							if ($obj_ldap->data[$i]["memberuid"][$j] == $_SESSION["user"]["name"])
+							{
+								// user has an entry for that permission - save to cache
+								$GLOBALS["cache"]["user"]["perms"][ $obj_ldap->data[$i]["cn"][0] ] = 1;
+							}
+						}
+					} // end of loop through groups
+
+					return 1;
+				}
+				else
+				{
+					log_write("warning", "user_auth", "No groups in LDAP database to load permissions from");
+					return 0;
+				}
+		
+			break;
+
+			case "sql":
+			default:
+				/*
+					SQL METHOD
+
+					Fetch all the permission types that the user has.
+				*/
+
+				$sql_obj		= New sql_query;
+				$sql_obj->string	= "SELECT permissions.value as type FROM users_permissions LEFT JOIN permissions ON permissions.id = users_permissions.permid WHERE userid='". $_SESSION["user"]["id"] ."'";
+				$sql_obj->execute();
+
+				if ($sql_obj->num_rows())
+				{
+					$sql_obj->fetch_array();
+
+					foreach ($sql_obj->data as $data_perms)
+					{
+						// save the permissions that the user has access to, to the cache
+						$GLOBALS["cache"]["user"]["perms"][ $data_perms["type"] ] = 1;
+					}
+				}
+				else
+				{
+					log_write("warning", "user_auth", "User does not belong to any permissions groups");
+					return 0;
+				}
+			break;
+
+		} // end of method processing.
+
+
+		// complete without error
+		return 1;
+
+	} // end of permissions_init
+
+
+
+
+	/*
+		permissions_get
+
+		Checks if the user has the selected permission or not.	
+
+		Fields
+		type		Permission to check for.
+
+		Returns
+		0		Failure
+		1		Success/Authorised
+	*/
+
+	function permissions_get($type)
+	{
+		log_debug("user_auth", "Executing permissions_get($type)");
+
+
+		// everyone (including guests) have the "public" permission, so don't waste cycles checking for it
+		if ($type == "public")
+		{
+			return 1;
+		}
+
+		// make sure the user is logged in
+		if (!$this->check_online())
+		{
+			return 0;
+		}
+		else
+		{
+			if (!isset($GLOBALS["cache"]["user"]["perms"]))
+			{
+				// initalise permissions cache
+				$this->permissions_init();
+			}
+
+			// return permissions value
+			if ($GLOBALS["cache"]["user"]["perms"][$type])
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+	} // end of permissions_get
+
 
 
 } // end of class user_auth
@@ -665,7 +942,7 @@ class blacklist
 
 		// fetch blacklist configuration
 		$this->blacklist_enable		= sql_get_singlevalue("SELECT value FROM `config` WHERE name='BLACKLIST_ENABLE' LIMIT 1");
-		$this->blacklist_limit		= sql_get_singlevalue("SELECT value as blacklist_limit FROM `config` WHERE name='BLACKLIST_LIMIT' LIMIT 1");
+		$this->blacklist_limit		= sql_get_singlevalue("SELECT value FROM `config` WHERE name='BLACKLIST_LIMIT' LIMIT 1");
 
 	}
 
@@ -690,11 +967,13 @@ class blacklist
 		{
 			// check the database - is this IP in the bad list?
 			$sql_blacklist_obj		= New sql_query;
-			$sql_blacklist_obj->string	= "SELECT failedcount, time FROM `users_blacklist` WHERE ipaddress='" . $this->ipaddress . "'";
+			$sql_blacklist_obj->string	= "SELECT failedcount, time FROM `users_blacklist` WHERE ipaddress='" . $this->ipaddress . "' LIMIT 1";
 			$sql_blacklist_obj->execute();
 
 			if ($sql_blacklist_obj->num_rows())
 			{
+				$sql_blacklist_obj->fetch_array();
+
 				foreach ($sql_blacklist_obj->data as $data_blacklist)
 				{
 					// IP is in bad list - but we need to check the count against the time, to see if it's just an
@@ -722,8 +1001,7 @@ class blacklist
 							$sql_obj->string	= "UPDATE `users_blacklist` SET `failedcount`='$newcount' WHERE ipaddress='" . $this->ipaddress . "' LIMIT 1";
 							$sql_obj->execute();
 
-							// IP is still blacklisted
-							return 1;
+							return 0;
 						}
 						else
 						{
@@ -732,9 +1010,12 @@ class blacklist
 							$sql_obj->string	= "DELETE FROM `users_blacklist` WHERE ipaddress='" . $this->ipaddress . "' LIMIT 1";
 							$sql_obj->execute();
 
-							// IP is no-longer blacklisted
 							return 0;
 						}
+					}
+					else
+					{
+						log_debug("blacklist", "IP is in blacklist but has not yet reached max limit");
 					}
 				}
 			}
@@ -963,64 +1244,20 @@ function user_changepwd($userid, $password)
 }
 
 
-
 /*
-	user_permissions_get($type)
+	user_permissions_get
 
-	This function looks up the database to see if the user has the specified permission. If so,
-	the function will return 1.
-
-	If the user does not have the permission, the function will return 0.
+	Wrapper function for user_auth->permissions_get()
 */
 function user_permissions_get($type)
 {
 	log_debug("inc_user", "Executing user_permissions_get($type)");
 
+	$obj_user = New user_auth;
 
-	// everyone (including guests) have the "public" permission, so don't waste cycles checking for it
-	if ($type == "public")
-	{
-		return 1;
-	}
-
-
-	if (isset($GLOBALS["cache"]["user"]["perms"][$type]))
-	{
-		return 1;
-	}
-	else
-	{
-		// other permissions... make sure user is valid, and logged in.
-		if ($userid = user_information("id"))
-		{
-			// get the id of the permission
-			$permid = sql_get_singlevalue("SELECT id as value FROM `permissions` WHERE value='$type' LIMIT 1");
-
-			// if nothing found, deny.
-			if (!$permid)
-				return 0;
-
-			// see if the user has this particular permission.
-			$sql_obj		= New sql_query;
-			$sql_obj->string	= "SELECT id FROM `users_permissions` WHERE userid='$userid' AND permid='$permid' LIMIT 1";
-			$sql_obj->execute();
-
-			if ($sql_obj->num_rows())
-			{
-				// user has an entry for that permission.
-
-				// save to cache & return success
-				$GLOBALS["cache"]["user"]["perms"][$type] = 1;
-				return 1;
-				
-			} // if permission exists
-			
-		} // if user is logged in
-	}
-	
-	// default to deny
-	return 0;
+	return $obj_user->permissions_get($type);
 }
+
 
 
 
