@@ -417,7 +417,23 @@ class table
 				{
 					if ($this->structure[$column]["dbname"] != "NONE")
 					{
-						$tmparray[$column] = $this->obj_ldap->data[$i][  $this->structure[$column]["dbname"]  ][0];
+						if ($this->obj_ldap->data[$i][  $this->structure[$column]["dbname"]  ]["count"] > 1)
+						{
+							// convert array of values to comma-deliminated string
+							$values = array();
+
+							for ($j = 0; $j < $this->obj_ldap->data[$i][  $this->structure[$column]["dbname"]  ]["count"]; $j++)
+							{
+								$values[] = $this->obj_ldap->data[$i][  $this->structure[$column]["dbname"]  ][$j];
+							}
+
+							$tmparray[$column] = format_arraytocommastring( $values );
+						}
+						else
+						{
+							// single standard value
+							$tmparray[$column] = $this->obj_ldap->data[$i][  $this->structure[$column]["dbname"]  ][0];
+						}
 					}
 				}
 

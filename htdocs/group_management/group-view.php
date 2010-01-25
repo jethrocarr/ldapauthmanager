@@ -80,7 +80,13 @@ class page_output
 		$structure["options"]["req"]	= "yes";
 		$structure["options"]["width"]	= "100";
 		$this->obj_form->add_input($structure);
-			
+
+		$structure = NULL;
+		$structure["fieldname"] 	= "memberuid";
+		$structure["type"]		= "text";
+		$this->obj_form->add_input($structure);
+
+
 		// hidden section
 		$structure = NULL;
 		$structure["fieldname"] 	= "id_group";
@@ -94,10 +100,42 @@ class page_output
 		$structure["type"]		= "submit";
 		$structure["defaultvalue"]	= "Save Changes";
 		$this->obj_form->add_input($structure);
-		
-		
+	
+
 		// define subforms
-		$this->obj_form->subforms["group_view"]		= array("groupname", "gidnumber");
+		$this->obj_form->subforms["group_view"]		= array("groupname", "gidnumber", "memberuid");
+
+
+
+		// get a list of all the users
+		$obj_ldap_users				= New ldap_query;
+		$obj_ldap_users->connect();
+		$obj_ldap_users->srvcfg["base_dn"]	= "ou=People,". $GLOBALS["config"]["ldap_dn"];
+
+		if ($obj_ldap_users->search("uid=*", array("uid")))
+		{
+			// add items
+			foreach ($obj_ldap_users->data as $data_user)
+			{
+				if ($data_user["uid"][0])
+				{
+					$structure = NULL;
+					$structure["fieldname"]				= "memberuid_". $data_user["uid"][0];
+					$structure["type"]				= "checkbox";
+					$structure["options"]["label"]			= $data_user["uid"][0];
+					$structure["options"]["no_fieldname"]		= "yes";
+
+					// add checkbox
+					$this->obj_form->add_input($structure);
+
+					// add checkbox to subforms
+					$this->obj_form->subforms["group_members"][]	= "memberuid_". $data_user["uid"][0];
+				}
+			}
+		} // end if users
+	
+
+		// define subforms
 		$this->obj_form->subforms["hidden"]		= array("id_group");
 		$this->obj_form->subforms["submit"]		= array("submit");
 
@@ -114,6 +152,19 @@ class page_output
 			{
 				$this->obj_form->structure["groupname"]["defaultvalue"]		= $this->obj_group->data["cn"];
 				$this->obj_form->structure["gidnumber"]["defaultvalue"]		= $this->obj_group->data["gidnumber"];
+//				$this->obj_form->structure["memberuid"]["defaultvalue"]		= format_arraytocommastring($this->obj_group->data["memberuid"]);
+
+				// check all member users
+				if (isset($this->obj_group->data["memberuid"]))
+				{
+					foreach ($this->obj_group->data["memberuid"] as $useruid)
+					{
+						$this->obj_form->structure["memberuid_". $useruid]["defaultvalue"] = "on";
+					}
+				}
+
+
+
 
 			}
 		}

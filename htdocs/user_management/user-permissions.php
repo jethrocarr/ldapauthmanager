@@ -2,58 +2,56 @@
 /*
 	user/user-permissions.php
 	
-	access: admin only
+	access: ldapadmins only
 
-	Displays all the permmissions of the selected user account
-	and allows an administrator to change them.
+	Displays all the permissions/groups of the selected LDAP user and allows them to be configured.
 */
 
 
 class page_output
 {
-	var $id;
+	var $obj_user;
 	var $obj_menu_nav;
 	var $obj_form;
 
 
 	function page_output()
 	{
+
+		// initate object
+		$this->obj_user = New ldap_auth_manage_user;
+
 		// fetch variables
-		$this->id = security_script_input('/^[0-9]*$/', $_GET["id"]);
+		$this->obj_user->id = security_script_input('/^[0-9]*$/', $_GET["id"]);
+
 
 		// define the navigiation menu
 		$this->obj_menu_nav = New menu_nav;
 
-		$this->obj_menu_nav->add_item("User's Details", "page=user/user-view.php&id=". $this->id ."");
-		$this->obj_menu_nav->add_item("User's Permissions", "page=user/user-permissions.php&id=". $this->id ."", TRUE);
-		$this->obj_menu_nav->add_item("Delete User", "page=user/user-delete.php&id=". $this->id ."");
+		$this->obj_menu_nav->add_item("User Details", "page=user_management/user-view.php&id=". $this->obj_user->id ."");
+		$this->obj_menu_nav->add_item("User Groups", "page=user_management/user-permissions.php&id=". $this->obj_user->id ."", TRUE);
+		$this->obj_menu_nav->add_item("Delete User", "page=user_management/user-delete.php&id=". $this->obj_user->id ."");
 	}
 
 
 	function check_permissions()
 	{
-		return user_permissions_get("admin");
+		return user_permissions_get("ldapadmins");
 	}
 
 
 	function check_requirements()
 	{
-		// verify that user exists
-		$sql_obj		= New sql_query;
-		$sql_obj->string	= "SELECT id FROM users WHERE id='". $this->id ."' LIMIT 1";
-		$sql_obj->execute();
-
-		if (!$sql_obj->num_rows())
+		// make sure the LDAP user requested actually exists.
+		if (!$this->obj_user->verify_id())
 		{
-			log_write("error", "page_output", "The requested user (". $this->id .") does not exist - possibly the user has been deleted.");
+			log_write("error", "page_output", "The requested user (". $this->obj_user->id .") does not exist - possibly the user has been deleted?");
 			return 0;
 		}
 
-		unset($sql_obj);
-
-
 		return 1;
 	}
+
 
 
 
@@ -62,11 +60,12 @@ class page_output
 		/*
 			Define form structure
 		*/
+		/*
 		$this->obj_form = New form_input;
 		$this->obj_form->formname = "user_permissions";
 		$this->obj_form->language = $_SESSION["user"]["lang"];
 
-		$this->obj_form->action = "user/user-permissions-process.php";
+		$this->obj_form->action = "user_management/user-permissions-process.php";
 		$this->obj_form->method = "post";
 
 
@@ -126,18 +125,22 @@ class page_output
 			Note: We don't load from error data, since there should never
 			be any errors when using this form.
 		*/
+
+		return 1;
 	}
 
 
 	function render_html()
 	{
 		// title + summary
-		print "<h3>USER PERMISSIONS</h3><br>";
-		print "<p>This page allows you to define what access rights the selected user has to the system.</p>";
+		print "<h3>USER GROUPS/PERMISSIONS</h3><br>";
+		print "<p>This page allows you to define what groups that the user can belong to.</p>";
 
 
 		// display the form
-		$this->obj_form->render_form();
+		//$this->obj_form->render_form();
+
+		format_msgbox("important", "<p>This feature hasn't been implemented yet, you can add the user to the desired group using the Manage Groups page meanwhile</p>");
 
 	}
 

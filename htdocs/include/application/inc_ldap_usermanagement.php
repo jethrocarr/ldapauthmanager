@@ -415,6 +415,7 @@ class ldap_auth_manage_group
 
 
 
+
 	/*
 		verify_id
 

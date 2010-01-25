@@ -41,6 +41,30 @@ if (user_permissions_get('ldapadmins'))
 		// basic fields
 		$obj_group->data["cn"]			= security_form_input_predefined("any", "groupname", 1, "");
 		$obj_group->data["gidnumber"]		= security_form_input_predefined("int", "gidnumber", 1, "");
+		$obj_group->data["memberuid"]		= NULL;
+
+		// get member information
+		$obj_ldap_users				= New ldap_query;
+		$obj_ldap_users->connect();
+		$obj_ldap_users->srvcfg["base_dn"]	= "ou=People,". $GLOBALS["config"]["ldap_dn"];
+
+		if ($obj_ldap_users->search("uid=*", array("uid")))
+		{
+			// add items
+			foreach ($obj_ldap_users->data as $data_user)
+			{
+				if ($data_user["uid"][0])
+				{
+					if ($_POST["memberuid_". $data_user["uid"][0] ] == "on")
+					{
+						// add user to group
+						$obj_group->data["memberuid"][]	= $data_user["uid"][0];
+					}
+				}
+			}
+		} // end if users
+
+
 	}
 	else
 	{

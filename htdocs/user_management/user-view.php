@@ -99,7 +99,13 @@ class page_output
 		$structure["type"]		= "input";
 		$structure["options"]["req"]	= "yes";
 		$this->obj_form->add_input($structure);
-			
+
+		$structure = NULL;
+		$structure["fieldname"] 	= "homedirectory";
+		$structure["type"]		= "input";
+		$structure["options"]["req"]	= "yes";
+		$this->obj_form->add_input($structure);
+		
 
 		// passwords
 		$structure = NULL;
@@ -136,7 +142,7 @@ class page_output
 		
 		
 		// define subforms
-		$this->obj_form->subforms["user_view"]		= array("username", "realname", "uidnumber", "gidnumber", "loginshell");
+		$this->obj_form->subforms["user_view"]		= array("username", "realname", "uidnumber", "gidnumber", "loginshell", "homedirectory");
 		$this->obj_form->subforms["user_password"]	= array("password_message", "password", "password_confirm");
 		$this->obj_form->subforms["hidden"]		= array("id_user");
 		$this->obj_form->subforms["submit"]		= array("submit");
@@ -157,6 +163,7 @@ class page_output
 				$this->obj_form->structure["uidnumber"]["defaultvalue"]		= $this->obj_user->data["uidnumber"];
 				$this->obj_form->structure["gidnumber"]["defaultvalue"]		= $this->obj_user->data["gidnumber"];
 				$this->obj_form->structure["loginshell"]["defaultvalue"]	= $this->obj_user->data["loginshell"];
+				$this->obj_form->structure["homedirectory"]["defaultvalue"]	= $this->obj_user->data["homedirectory"];
 
 			}
 		}

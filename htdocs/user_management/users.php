@@ -90,7 +90,7 @@ class page_output
 			// permissions/groups
 			$structure = NULL;
 			$structure["id"]["column"]	= "gidnumber";
-			$this->obj_table->add_link("tbl_lnk_permissions", "user_management/user-groups.php", $structure);
+			$this->obj_table->add_link("tbl_lnk_permissions", "user_management/user-permissions.php", $structure);
 
 			// delete link
 			$structure = NULL;
