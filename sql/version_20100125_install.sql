@@ -1,25 +1,13 @@
--- phpMyAdmin SQL Dump
--- version 3.2.2
--- http://www.phpmyadmin.net
 --
--- Host: localhost
--- Generation Time: Oct 26, 2009 at 01:04 PM
--- Server version: 5.0.77
--- PHP Version: 5.2.11
-
-SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-
+-- LDAPAUTHMANAGER APPLICATION
 --
--- Database: `amberphplib`
+-- Inital database install SQL.
 --
 
--- --------------------------------------------------------
+CREATE DATABASE `ldapauthmanager` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `ldapauthmanager`;
+
+
 
 --
 -- Table structure for table `config`
@@ -38,7 +26,10 @@ CREATE TABLE IF NOT EXISTS `config` (
 INSERT INTO `config` (`name`, `value`) VALUES
 ('APP_MYSQL_DUMP', '/usr/bin/mysqldump'),
 ('APP_PDFLATEX', '/usr/bin/pdflatex'),
-('BLACKLIST_ENABLE', 'enabled'),
+('AUTH_METHOD', 'ldaponly'),
+('AUTO_INT_GID', '2005'),
+('AUTO_INT_UID', '1020'),
+('BLACKLIST_ENABLE', ''),
 ('BLACKLIST_LIMIT', '10'),
 ('DATA_STORAGE_LOCATION', 'use_database'),
 ('DATA_STORAGE_METHOD', 'database'),
@@ -46,9 +37,10 @@ INSERT INTO `config` (`name`, `value`) VALUES
 ('LANGUAGE_DEFAULT', 'en_us'),
 ('LANGUAGE_LOAD', 'preload'),
 ('PATH_TMPDIR', '/tmp'),
-('PHONE_HOME', 'enabled'),
+('PHONE_HOME', 'disabled'),
 ('PHONE_HOME_TIMER', ''),
-('SUBSCRIPTION_ID', ''),
+('SCHEMA_VERSION', '20100124'),
+('SUBSCRIPTION_ID', '5f4d732e933c8ac621d99c0e2a15a536'),
 ('SUBSCRIPTION_SUPPORT', 'opensource'),
 ('TIMEZONE_DEFAULT', 'SYSTEM'),
 ('UPLOAD_MAXBYTES', '5242880');
@@ -68,10 +60,9 @@ CREATE TABLE IF NOT EXISTS `file_uploads` (
   `file_size` varchar(255) NOT NULL,
   `file_location` char(2) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 
--- --------------------------------------------------------
 
 --
 -- Table structure for table `file_upload_data`
@@ -82,9 +73,9 @@ CREATE TABLE IF NOT EXISTS `file_upload_data` (
   `fileid` int(11) NOT NULL default '0',
   `data` blob NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Table for use as database-backed file storage system' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Table for use as database-backed file storage system' AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
+
 
 --
 -- Table structure for table `journal`
@@ -102,9 +93,8 @@ CREATE TABLE IF NOT EXISTS `journal` (
   `title` varchar(255) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `journalname` (`journalname`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
 
 --
 -- Table structure for table `language`
@@ -118,7 +108,22 @@ CREATE TABLE IF NOT EXISTS `language` (
   PRIMARY KEY  (`id`),
   KEY `language` (`language`),
   KEY `label` (`label`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=292 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=301 ;
+
+--
+-- Dumping data for table `language`
+--
+
+INSERT INTO `language` (`id`, `language`, `label`, `translation`) VALUES
+(292, 'en_us', 'username_ldapauthmanager', 'Username'),
+(293, 'en_us', 'password_ldapauthmanager', 'Password'),
+(294, 'en_us', 'user_account', 'My Account'),
+(295, 'en_us', 'manage_users', 'Manage Users'),
+(296, 'en_us', 'manage_groups', 'Manage Groups'),
+(297, 'en_us', 'tbl_lnk_details', 'details'),
+(298, 'en_us', 'tbl_lnk_permissions', 'groups'),
+(299, 'en_us', 'tbl_lnk_delete', 'delete'),
+(300, 'en_us', 'configuration', 'Configuration');
 
 -- --------------------------------------------------------
 
@@ -153,8 +158,25 @@ CREATE TABLE IF NOT EXISTS `menu` (
   `link` varchar(50) NOT NULL,
   `permid` int(11) NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=170 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=182 ;
 
+--
+-- Dumping data for table `menu`
+--
+
+INSERT INTO `menu` (`id`, `priority`, `parent`, `topic`, `link`, `permid`) VALUES
+(170, 150, 'top', 'user_account', 'user/account.php', 0),
+(171, 900, 'top', 'configuration', 'admin/config.php', 2),
+(172, 200, 'top', 'manage_users', 'user_management/users.php', 2),
+(173, 300, 'top', 'manage_groups', 'group_management/groups.php', 2),
+(174, 201, 'manage_users', '', 'user_management/user-view.php', 2),
+(175, 201, 'manage_users', '', 'user_management/user-delete.php', 2),
+(176, 201, 'manage_users', '', 'user_management/user-permissions.php', 2),
+(177, 201, 'manage_users', '', 'user_management/user-add.php', 2),
+(178, 301, 'manage_groups', '', 'group_management/group-view.php', 2),
+(179, 301, 'manage_groups', '', 'group_management/group-add.php', 2),
+(180, 301, 'manage_groups', '', 'group_management/group-delete.php', 2),
+(181, 100, 'top', 'Overview', 'home.php', 0);
 
 -- --------------------------------------------------------
 
@@ -167,7 +189,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   `value` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Stores all the possible permissions' AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Stores all the possible permissions' AUTO_INCREMENT=4 ;
 
 --
 -- Dumping data for table `permissions`
@@ -175,9 +197,9 @@ CREATE TABLE IF NOT EXISTS `permissions` (
 
 INSERT INTO `permissions` (`id`, `value`, `description`) VALUES
 (1, 'disabled', 'Enabling the disabled permission will prevent the user from being able to login.'),
-(2, 'admin', 'Provides access to user and configuration management features (note: any user with admin can provide themselves with access to any other section of this program)');
+(2, 'ldapadmins', 'Provides access to user and configuration management features (note: any user with admin can provide themselves with access to any other section of this program)');
 
--- --------------------------------------------------------
+
 
 --
 -- Table structure for table `users`
@@ -195,16 +217,9 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY  (`id`),
   KEY `ipaddress` (`ipaddress`),
   KEY `time` (`time`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='User authentication system.' AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='User authentication system.' AUTO_INCREMENT=1 ;
 
---
--- Dumping data for table `users`
---
 
-INSERT INTO `users` (`id`, `username`, `realname`, `password`, `password_salt`, `contact_email`, `time`, `ipaddress`) VALUES
-(1, 'setup', 'Setup Account', '14c2a5c3681b95582c3e01fc19f49853d9cdbb31', 'hctw8lbz3uhxl6sj8ixr', 'support@amberdms.com', 0, '');
-
--- --------------------------------------------------------
 
 --
 -- Table structure for table `users_blacklist`
@@ -216,14 +231,9 @@ CREATE TABLE IF NOT EXISTS `users_blacklist` (
   `failedcount` int(11) NOT NULL default '0',
   `time` bigint(20) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Prevents automated login attacks.' AUTO_INCREMENT=1 ;
-
---
--- Dumping data for table `users_blacklist`
---
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Prevents automated login attacks.' AUTO_INCREMENT=1 ;
 
 
--- --------------------------------------------------------
 
 --
 -- Table structure for table `users_options`
@@ -235,13 +245,8 @@ CREATE TABLE IF NOT EXISTS `users_options` (
   `name` varchar(255) NOT NULL,
   `value` varchar(255) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=181 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
---
--- Dumping data for table `users_options`
---
-
--- --------------------------------------------------------
 
 --
 -- Table structure for table `users_permissions`
@@ -254,13 +259,6 @@ CREATE TABLE IF NOT EXISTS `users_permissions` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Stores user permissions.' AUTO_INCREMENT=2 ;
 
---
--- Dumping data for table `users_permissions`
---
-
-INSERT INTO `users_permissions` (`id`, `userid`, `permid`) VALUES (1, 1, 2);
-
--- --------------------------------------------------------
 
 --
 -- Table structure for table `users_sessions`
@@ -275,7 +273,13 @@ CREATE TABLE IF NOT EXISTS `users_sessions` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+
+
 --
--- Dumping data for table `users_sessions`
+-- Set Schema Version
 --
+
+UPDATE `config` SET `value` = '20100124' WHERE name='SCHEMA_VERSION' LIMIT 1;
+
+
 

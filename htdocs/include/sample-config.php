@@ -11,7 +11,7 @@
 	MySQL Database Configuration
 */
 $config["db_host"] = "localhost";			// hostname of the MySQL server
-$config["db_name"] = "myapp";				// database name
+$config["db_name"] = "ldapauthmanager";			// database name
 $config["db_user"] = "root";				// MySQL user
 $config["db_pass"] = "";				// MySQL password (if any)
 
@@ -20,11 +20,10 @@ $config["db_pass"] = "";				// MySQL password (if any)
 	LDAP Database Configuration
 */
 $config["ldap_host"]		= "localhost";					// hostname of the LDAP server
-$config["ldap_post"]		= "389";					// LDAP server port
-$config["ldap_manager_user"]	= "cn=Manager,dc=example,dc=amberdms,dc=com";	// LDAP manager
-$config["ldap_manager_pwd"]	= "";
-
-
+$config["ldap_port"]		= "389";					// LDAP server port
+$config["ldap_dn"]		= "ou=auth,dc=example,dc=com";			// DN to run queries under
+$config["ldap_manager_user"]	= "cn=Manager,dc=example,dc=com";		// LDAP manager
+$config["ldap_manager_pwd"]	= "password";
 
 
 
@@ -48,9 +47,6 @@ else
 	$GLOBALS["_SESSION"]	= array();
 	$_SESSION["mode"]	= "cli";
 }
-
-// Connect to the MySQL database
-include("database.php");
 
 
 // force debugging on for all users + scripts
