@@ -149,34 +149,38 @@ class ldap_query
 
 
 	/*
-		entry_load_data
+		record_create
 
-		Fetches all the data for a *single* entry as per $this->entry_dn
+		Creates a new LDAP entry/record from the provided data.
+
+		Fields
+		$this->record_dn	DN of the record to create
+		$this->data		Array of attributes to write (see php ldap_add for syntax information)
 
 		Returns
-		0	Failure
-		1	Success
+		0		Failure
+		1		Success
 	*/
-/*
-	function entry_load_data()
-	{
-		log_write("debug", "ldap_query", "Executing entry_load()");
 
-		if ($this->search($this->entry_dn))
+	function record_create()
+	{
+		log_write("debug", "ldap_query", "Executing record_create()");
+
+		if (ldap_add($this->ldapcon, $this->record_dn .",". $this->srvcfg["base_dn"], $this->data))
 		{
-			$data = $this-> 
+			return 1;
 		}
 
 		return 0;
 
-	}
-*/
+	} // end of record_create()
+
+
 
 	/*
 		record_update
 
-		Updates an existing LDAP entry with new data. Best way to use this is to run entry_load() to get all
-		current attributes and then update the $this->data array.
+		Updates an existing LDAP entry with new data.
 
 		NOTE: this function will not add a new entry
 
@@ -200,13 +204,42 @@ class ldap_query
 		}
 
 		return 0;
-	}
 
+	} // end of record_update()
+
+
+
+
+	/*
+		record_delete
+
+		Deletes an LDAP record
+
+		Fields
+		$this->record_dn	DN of the record to delete
+
+		Returns
+		0		Failure
+		1		Success
+	*/
+
+	function record_delete()
+	{
+		log_write("debug", "ldap_query", "Executing record_delete()");
+
+		if (ldap_delete($this->ldapcon, $this->record_dn .",". $this->srvcfg["base_dn"]))
+		{
+			return 1;
+		}
+
+		return 0;
+
+	} // end of record_delete()
 
 
 		
 
-}
+} // end of ldap_query
 
 
 
