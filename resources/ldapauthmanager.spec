@@ -11,7 +11,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 BuildRequires: gettext
 Requires: httpd, mod_ssl
-Requires: php >= 5.1.6, mysql-server, php-mysql
+Requires: php >= 5.1.6, mysql-server, php-mysql, php-ldap
 Requires: perl, perl-DBD-MySQL
 Prereq: httpd, php, mysql-server, php-mysql
 
@@ -85,6 +85,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ldapauthmanager
 
 %changelog
-* Mon Jan 25 Jethro Carr <jethro.carr@amberdms.com> 1.0.0_alpha_1
+* Mon Jan 25 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.0_alpha_1
 - Inital Application release
 

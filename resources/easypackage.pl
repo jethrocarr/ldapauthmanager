@@ -40,8 +40,8 @@ print "Please enter version (eg: 20080419_beta0):\n";
 my $version = get_question('^\S*$');
 
 # determine final name
-my $name_base		= "mailguidance";
-my $name_withversion	= "mailguidance-$version";
+my $name_base		= "ldapauthmanager";
+my $name_withversion	= "ldapauthmanager-$version";
 
 
 # update CVS tag?
