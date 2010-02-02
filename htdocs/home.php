@@ -39,8 +39,19 @@ else
 			print "<h3>OVERVIEW</h3>";
 			//print "<p>Welcome to <a target=\"new\" href=\"http://www.amberdms.com/ldapauthmanager\">LDAPAuthManager</a>, an open-source, PHP web-based LDAP authentication management interface designed to make it easy to manage users running on centralised authentication environments.</p>";
 			print "<p>Welcome to LDAPAuthManager, a PHP web-based LDAP authentication management interface designed to make it easy to manage users running on centralised authentication environments.</p>";
+	
+			
+			// buttons
+			print "<br><p>";
+			print "<a class=\"button\" href=\"index.php?page=user/account.php\">Adjust your login or change your password</a> ";
 
-			format_msgbox("important", "<p>This application is currently in alpha status and there are some known bugs and missing features that are currently being worked on.</p>");
+			if (user_permissions_get("ldapadmins"))
+			{
+				print "<a class=\"button\" href=\"index.php?page=user_management/users.php\">Manage Users</a> ";
+				print "<a class=\"button\" href=\"index.php?page=user_management/groups.php\">Manage Groups</a> ";
+			}
+
+			print "</p>";
 
 		}
 	}

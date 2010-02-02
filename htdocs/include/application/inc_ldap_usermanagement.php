@@ -70,7 +70,7 @@ class ldap_auth_manage_user
 			}
 			else
 			{
-				log_write("error", "page", "Invalid user ". $this->id ." requested");
+				log_write("debug", "page", "Invalid user ". $this->id ." requested");
 			}
 		}
 
@@ -441,7 +441,7 @@ class ldap_auth_manage_group
 			}
 			else
 			{
-				log_write("error", "page", "Invalid group ". $this->id ." requested");
+				log_write("debug", "page", "Invalid group ". $this->id ." requested");
 			}
 		}
 

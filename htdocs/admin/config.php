@@ -123,7 +123,7 @@ class page_output
 	{
 		// Title + Summary
 		print "<h3>CONFIGURATION</h3><br>";
-		print "<p>MailGuidance is a flexible application, you can use this page to enable features such as mail archiving and the default address to deliver unread messages to.</p>";
+		print "<p>Use this page to adjust authldapmanager's configuration to suit your requirements.</p>";
 	
 		// display the form
 		$this->obj_form->render_form();
