@@ -65,7 +65,7 @@ class page_output
 		
 		
 		// define subforms
-		$this->obj_form->subforms["group_add"]		= array("groupname", "gidnumber");
+		$this->obj_form->subforms["group_view"]		= array("groupname", "gidnumber");
 		$this->obj_form->subforms["submit"]		= array("submit");
 
 

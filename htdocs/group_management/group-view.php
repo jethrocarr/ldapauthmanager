@@ -81,11 +81,6 @@ class page_output
 		$structure["options"]["width"]	= "100";
 		$this->obj_form->add_input($structure);
 
-		$structure = NULL;
-		$structure["fieldname"] 	= "memberuid";
-		$structure["type"]		= "text";
-		$this->obj_form->add_input($structure);
-
 
 		// hidden section
 		$structure = NULL;
@@ -103,7 +98,7 @@ class page_output
 	
 
 		// define subforms
-		$this->obj_form->subforms["group_view"]		= array("groupname", "gidnumber", "memberuid");
+		$this->obj_form->subforms["group_view"]		= array("groupname", "gidnumber");
 
 
 

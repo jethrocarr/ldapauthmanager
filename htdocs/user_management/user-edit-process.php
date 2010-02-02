@@ -36,13 +36,17 @@ if (user_permissions_get('ldapadmins'))
 		{
 			// load existing data
 			$obj_user->load_data();
+		
+			// get orig IDs so we can check if safe to change
+			$orig_uidnumber		= $obj_user->data["uidnumber"];
+			$orig_gidnumber		= $obj_user->data["gidnumber"];
 		}
 
 		// basic fields
 		$obj_user->data["cn"]			= security_form_input_predefined("any", "realname", 1, "");
 		$obj_user->data["uid"]			= security_form_input_predefined("any", "username", 1, "");
-		$obj_user->data["uidnumber"]		= security_form_input_predefined("int", "uidnumber", 1, "");
-		$obj_user->data["gidnumber"]		= security_form_input_predefined("int", "gidnumber", 1, "");
+		$obj_user->data["uidnumber"]		= security_form_input_predefined("int", "uidnumber", 3, "");
+		$obj_user->data["gidnumber"]		= security_form_input_predefined("int", "gidnumber", 3, "");
 		$obj_user->data["loginshell"]		= security_form_input_predefined("any", "loginshell", 1, "");
 		$obj_user->data["homedirectory"]	= security_form_input_predefined("any", "homedirectory", 1, "");
 	}
@@ -87,6 +91,45 @@ if (user_permissions_get('ldapadmins'))
 
 
 
+	if ($mode == "edit")
+	{
+		// if it's changed, check if the user ID has been taken by another user or not
+		if ($orig_uidnumber != $obj_user->data["uidnumber"])
+		{
+			$obj_user_check		= New ldap_auth_manage_user;
+			$obj_user_check->id	= $obj_user->data["uidnumber"];
+
+			if ($obj_user_check->verify_id())
+			{
+				log_write("error", "process", "The requested UID number is already in use by another user, please select a different one.");
+				error_flag_field("uidnumber");
+			}
+
+			unset($obj_user_check);
+		}
+
+
+		// if it's changed, check if the group ID has been taken by another group or not
+		/*
+		if ($orig_gidnumber != $obj_user->data["gidnumber"])
+		{
+			$obj_group_check	= New ldap_auth_manage_group;
+			$obj_group_check->id	= $obj_user->data["gidnumber"];
+
+			if ($obj_group_check->verify_id())
+			{
+				log_write("error", "process", "The requested GID number is already in use by another group, please select a different one.");
+				error_flag_field("gidnumber");
+			}
+
+			unset($obj_group_check);
+		}
+		*/
+	}
+
+
+
+
 	//// PROCESS DATA ////////////////////////////
 
 
@@ -95,7 +138,7 @@ if (user_permissions_get('ldapadmins'))
 		if ($mode == "edit")
 		{
 			$_SESSION["error"]["form"]["user_view"]	= "failed";
-			header("Location: ../index.php?page=user_management/user-view&id=". $obj_user->id .".php");
+			header("Location: ../index.php?page=user_management/user-view.php&id=". $obj_user->id ."");
 		}
 		else
 		{
