@@ -92,7 +92,7 @@ class ldap_auth_manage_user
 	*/
 	function load_data()
 	{
-		log_debug("ldap_auth_manage_user", "Executing verify_id()");
+		log_debug("ldap_auth_manage_user", "Executing load_data()");
 
 		// fetch all user attributes
 		$this->obj_ldap->search("uidnumber=". $this->id);
@@ -115,6 +115,52 @@ class ldap_auth_manage_user
 
 		return 0;
 	}
+
+
+	/*
+		load_data_groups
+
+		Returns GID of all groups the user belongs to
+
+		Results
+		0	Failure
+		array	GIDs of groups that user belongs to
+	*/
+	function load_data_groups()
+	{
+		log_debug("ldap_auth_manage_user", "Executing load_data_groups()");
+
+		// fetch all group attributes
+		$this->obj_ldap->srvcfg["base_dn"] = "ou=Group,". $GLOBALS["config"]["ldap_dn"];
+		$this->obj_ldap->search("memberuid=". $this->data["uid"], array("gidnumber"));
+
+
+		if ($this->obj_ldap->data_num_rows)
+		{
+			$return_gid = array();
+
+			for ($i=0; $i < $this->obj_ldap->data["count"]; $i++)
+			{
+				$return_gid[]	= $this->obj_ldap->data[$i]["gidnumber"][0];
+			}
+
+			// reset base_dn
+			$this->obj_ldap->srvcfg["base_dn"] = "ou=People,". $GLOBALS["config"]["ldap_dn"];
+
+			// return array of GIDs
+			return $return_gid;
+		}
+
+
+		// reset base_dn
+		$this->obj_ldap->srvcfg["base_dn"] = "ou=People,". $GLOBALS["config"]["ldap_dn"];
+
+		return 0;
+	}
+
+
+
+
 
 
 	/*
@@ -354,23 +400,78 @@ class ldap_auth_manage_user
 	{
 		log_write("debug", "ldap_auth_manage_user", "Executing update()");
 
-		// set the record to manipulate
+
+		/*
+			Delete user
+		*/
 		$this->obj_ldap->record_dn	= "uid=". $this->data["uid"] ."";
 
-		// delete
-		if ($this->obj_ldap->record_delete())
+		if (!$this->obj_ldap->record_delete())
 		{
-			return 1;
+			log_write("debug", "ldap_auth_manage_user", "An error occured whilst attempting to delete user");
+			return 0;
 		}
 
 
-		// TODO: delete group
-	
 
-		// failure
-		return 0;
+		/*
+			Delete matching group
+		*/
+		$obj_group	= New ldap_auth_manage_group;
+
+		$obj_group->data["cn"]			= $this->data["uid"];
+		$obj_group->data["gidnumber"]		= $this->data["gidnumber"];
+
+		if (!$obj_group->delete())
+		{	
+			log_write("debug", "ldap_auth_manage_user", "An error occured whilst attempting to delete associated user group");
+			return 0;
+		}
+
+
+
+		/*
+			Remove user from other groups they might have been assigned to
+		*/
+	
+		// fetch array of all groups user belongs to
+		$gidarray = $this->load_data_groups();
+
+		// open each group and remove the user
+		foreach ($gidarray as $gid)
+		{
+			$obj_group	= New ldap_auth_manage_group;
+			$obj_group->id	= $gid;
+
+			if ($obj_group->load_data())
+			{
+				$memberuids			= $obj_group->data["memberuid"];
+				$obj_group->data["memberuid"]	= array();
+
+				foreach ($memberuids as $uid)
+				{
+					// add all uids other than the selected user back
+					if ($uid != $this->data["uid"])
+					{
+						$obj_group->data["memberuid"][] = $uid;
+					}
+				}
+			}
+
+			// update group
+			if (!$obj_group->update())
+			{
+				log_write("debug", "process", "An unexpected error occured whilst attemping to remove user from group ". $obj_group->id);
+			}
+		}
+
+
+
+		// success
+		return 1;
 
 	} // end of delete()
+
 
 } // end of class ldap_auth_manage_user
 
@@ -379,6 +480,7 @@ class ldap_auth_manage_user
 
 
 /*
+	
 	CLASS LDAP_AUTH_MANAGE_GROUP
 
 	Provides functions for quering, creating, updating and deleting
@@ -647,7 +749,7 @@ class ldap_auth_manage_group
 		Deletes the selected group.
 		
 		Dependencies
-		This function requires the uid to be set, so you may need to run load_data() first.
+		This function requires the cn to be set, so you may need to run load_data() first.
 
 		Returns
 		0	Failure

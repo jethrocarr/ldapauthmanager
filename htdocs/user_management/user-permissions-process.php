@@ -2,135 +2,165 @@
 /*
 	user/user-permissions-process.php
 
-	Access: admin users only
+	Access:		ldapadmins only
 
-	Updates a user account's permissions.
+	Assign/unassign the selected user to/from groups.
 */
 
-
 // includes
-include_once("../include/config.php");
-include_once("../include/amberphplib/main.php");
+require("../include/config.php");
+require("../include/amberphplib/main.php");
+require("../include/application/main.php");
 
 
-if (user_permissions_get('admin'))
+if (user_permissions_get('ldapadmins'))
 {
 	////// INPUT PROCESSING ////////////////////////
 
-	$id				= security_form_input_predefined("int", "id_user", 1, "");
-	
-	// convert all the permissions input
-	$permissions = array();
 
-	$sql_perms_obj		= New sql_query;
-	$sql_perms_obj->string	= "SELECT * FROM `permissions` ORDER BY value";
-	$sql_perms_obj->execute();
-	$sql_perms_obj->fetch_array();
+	$obj_user		= New ldap_auth_manage_user;
+	$obj_user->id		= security_form_input_predefined("int", "id_user", 0, "");
 
-	foreach ($sql_perms_obj->data as $data_sql)
+
+	if (!$obj_user->verify_id())
 	{
-		$permissions[ $data_sql["value"] ] = security_form_input_predefined("any", $data_sql["value"], 0, "Form provided invalid input!");
+		log_write("error", "process", "The user you have attempted to edit - ". $obj_user->id ." - does not exist in this system.");
 	}
-
-	
-
-	///// ERROR CHECKING ///////////////////////
-	
-
-	// make sure the user actually exists
-	$sql_obj		= New sql_query;
-	$sql_obj->string	= "SELECT id FROM `users` WHERE id='$id' LIMIT 1";
-	$sql_obj->execute();
-
-	if (!$sql_obj->num_rows())
+	else
 	{
-		log_write("error", "process", "The user you have attempted to edit - $id - does not exist in this system.");
-	}
+		// load existing data
+		$obj_user->load_data();
 
 
+		$gid_existing	= $obj_user->load_data_groups();
+		$gid_new	= array();
+
+
+		// run through the groups
+		$obj_ldap_groups				= New ldap_query;
+		$obj_ldap_groups->connect();
+		$obj_ldap_groups->srvcfg["base_dn"]		= "ou=Group,". $GLOBALS["config"]["ldap_dn"];
+
+		if ($obj_ldap_groups->search("cn=*", array("gidnumber", "cn")))
+		{
+			// add items
+			foreach ($obj_ldap_groups->data as $data_group)
+			{
+				if ($data_group["cn"][0])
+				{
+					if ($_POST["memberuid_". $data_group["gidnumber"][0] ] == "on")
+					{
+						// add group to new list
+						$gid_new[] = $data_group["gidnumber"][0];
+
+						// set session for error handling
+						$_SESSION["error"]["memberuid_". $data_group["gidnumber"][0] ] = "on";
+					}
+
+				}
+			}
+
+		} // end if groups
+
+	} // end if valid user ID
+
+
+	
 
 	//// PROCESS DATA ////////////////////////////
 
 
 	if (error_check())
 	{
-		$_SESSION["error"]["form"]["user_permissions"] = "failed";
-		header("Location: ../index.php?page=user/user-permissions.php");
+		$_SESSION["error"]["form"]["user_groups"] = "failed";
+		header("Location: ../index.php?page=user_management/user-permissions.php&id=". $obj_user->id);
 		exit(0);
 	}
 	else
 	{
-		$_SESSION["error"] = array();
+		error_clear();
 
 		/*
-			UPDATE THE PERMISSIONS
-		
-			This takes quite a few SQL calls, as we need to remove old permissions
-			and add new ones on a one-by-one basis.
+			UPDATE THE GROUPS
 
-			TODO: This code could be optimised to be a bit more efficent with it's SQL queries.
+			We need to check which groups have changed and for each group that's changed, load the data
+			modify and then change.
+		
 		*/
 
-		// start transaction
-		$sql_obj = New sql_query;
-		$sql_obj->trans_begin();
+		$gid_affected	= array_merge($gid_existing, $gid_new);
+		$gid_affected	= array_unique($gid_affected);
 
 
-		foreach ($sql_perms_obj->data as $data_perms)
+		foreach ($gid_affected as $gid)
 		{
-			// check if any current settings exist
-			$sql_user_obj		= New sql_query;
-			$sql_user_obj->string	= "SELECT id FROM `users_permissions` WHERE userid='$id' AND permid='" . $data_perms["id"] . "' LIMIT 1";
-			$sql_user_obj->execute();
-
-			if ($sql_user_obj->num_rows())
+			// is the GID in both new and existing arrays? If so, nothing has changed.
+			if (in_array($gid, $gid_existing) && in_array($gid, $gid_new))
 			{
-				// user has this particular permission set
-
-				// if the new setting is "off", delete the current setting.
-				if ($permissions[ $data_perms["value"] ] != "on")
-				{
-					$sql_obj->string	= "DELETE FROM `users_permissions` WHERE userid='$id' AND permid='" . $data_perms["id"] . "' LIMIT 1";
-					$sql_obj->execute();
-				}
-
-				// if new setting is "on", we don't need todo anything.
-
+				// no change
 			}
 			else
-			{	// no current setting exists
+			{
+				// open group to edit
+				$obj_group	= New ldap_auth_manage_group;
+				$obj_group->id	= $gid;
 
-				// if the new setting is "on", insert a new setting
-				if ($permissions[ $data_perms["value"] ] == "on")
+				if ($obj_group->load_data())
 				{
-					$sql_obj->string	= "INSERT INTO `users_permissions` (userid, permid) VALUES ('$id', '" . $data_perms["id"] . "')";
-					$sql_obj->execute();
+					// update 
+
+					// check what sort of change took place.
+					if (in_array($gid, $gid_existing))
+					{
+						// has been removed from group
+
+						$memberuids			= $obj_group->data["memberuid"];
+						$obj_group->data["memberuid"]	= array();
+
+						foreach ($memberuids as $uid)
+						{
+							// add all uids other than the selected user back
+							if ($uid != $obj_user->data["uid"])
+							{
+								$obj_group->data["memberuid"][] = $uid;
+							}
+						}
+					}
+					else
+					{
+						// has been added to group
+						$obj_group->data["memberuid"][] = $obj_user->data["uid"];
+					}
+
+
+					// update group
+					if (!$obj_group->update())
+					{
+						log_write("error", "process", "An unexpected error ocurred whilst attempting to update group data for group GID ". $obj_group->id);
+					}
 				}
-
-				// if new setting is "off", we don't need todo anything.
+				else
+				{
+					log_write("error", "process", "An unexpected error occured whilst attemping to load group data for group GID ". $obj_group->id);
+				}
 			}
-			
-		} // end of while
 
+		} // end of loop through groups
 
 
 		// commit
 		if (error_check())
 		{
-			$sql_obj->trans_rollback();
-
-			log_write("error", "process", "An error occured whilst attempting to update user permissions, no change has been made.");
+			log_write("error", "process", "An error occured whilst attempting to update group assignments.");
 		}
 		else
 		{
-			$sql_obj->trans_commit();
-
-			log_write("notification", "process", "User permissions have been updated, and are active immediately.");
+			log_write("notification", "process", "User group assignment has been updated.");
 		}
 
 
 		// goto view page
-		header("Location: ../index.php?page=user/user-permissions.php&id=$id");
+		header("Location: ../index.php?page=user_management/user-permissions.php&id=". $obj_user->id);
 		exit(0);
 
 

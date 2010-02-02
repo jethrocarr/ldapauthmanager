@@ -58,10 +58,6 @@ class page_output
 		$this->obj_table->init_data_ldap();
 		$this->obj_table->load_data_ldap("cn=*", "ou=Group,". $GLOBALS["config"]["ldap_dn"]);
 
-
-		// fix array data
-		// TODO: write this
-
 	}
 
 

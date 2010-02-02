@@ -58,73 +58,115 @@ class page_output
 	function execute()
 	{
 		/*
+			Load User Information
+		*/
+		$this->obj_user->load_data();
+
+
+
+		/*
 			Define form structure
 		*/
-		/*
-		$this->obj_form = New form_input;
-		$this->obj_form->formname = "user_permissions";
-		$this->obj_form->language = $_SESSION["user"]["lang"];
+		$this->obj_form			= New form_input;
+		$this->obj_form->formname	= "user_groups";
+		$this->obj_form->language	= $_SESSION["group"]["lang"];
 
-		$this->obj_form->action = "user_management/user-permissions-process.php";
-		$this->obj_form->method = "post";
+		$this->obj_form->action		= "user_management/user-permissions-process.php";
+		$this->obj_form->method		= "post";
 
 
-		$sql_perms_obj		= New sql_query;
-		$sql_perms_obj->string	= "SELECT * FROM `permissions` ORDER BY value='disabled' DESC, value='admin' DESC, value";
-		$sql_perms_obj->execute();
-		$sql_perms_obj->fetch_array();
-		
-		foreach ($sql_perms_obj->data as $data_perms)
-		{
-			// define the checkbox
-			$structure = NULL;
-			$structure["fieldname"]				= $data_perms["value"];
-			$structure["type"]				= "checkbox";
-			$structure["options"]["label"]			= $data_perms["description"];
-			$structure["options"]["no_translate_fieldname"]	= "yes";
 
-			// check if the user has this permission
-			$sql_obj		= New sql_query;
-			$sql_obj->string	= "SELECT id FROM `users_permissions` WHERE userid='". $this->id ."' AND permid='". $data_perms["id"] ."'";
-			$sql_obj->execute();
-
-			if ($sql_obj->num_rows())
-			{
-				$structure["defaultvalue"] = "on";
-			}
-
-			// add checkbox
-			$this->obj_form->add_input($structure);
-
-			// add checkbox to subforms
-			$this->obj_form->subforms["user_permissions"][] = $data_perms["value"];
-
-		}
-	
-		// user ID (hidden field)
+		// general
 		$structure = NULL;
-		$structure["fieldname"]		= "id_user";
+		$structure["fieldname"] 	= "username";
+		$structure["type"]		= "text";
+		$structure["defaultvalue"]	= $this->obj_user->data["uid"];
+		$this->obj_form->add_input($structure);
+							
+
+		// hidden section
+		$structure = NULL;
+		$structure["fieldname"] 	= "id_user";
 		$structure["type"]		= "hidden";
-		$structure["defaultvalue"]	= $this->id;
-		$this->obj_form->add_input($structure);	
-	
+		$structure["defaultvalue"]	= $this->obj_user->id;
+		$this->obj_form->add_input($structure);
+		
+
 		// submit section
 		$structure = NULL;
 		$structure["fieldname"] 	= "submit";
 		$structure["type"]		= "submit";
 		$structure["defaultvalue"]	= "Save Changes";
 		$this->obj_form->add_input($structure);
-		
-		
+	
+
+		// define subforms
+		$this->obj_form->subforms["user_view"]		= array("username");
+
+
+
+		// get a list of all the groups
+		$obj_ldap_groups				= New ldap_query;
+		$obj_ldap_groups->connect();
+		$obj_ldap_groups->srvcfg["base_dn"]		= "ou=Group,". $GLOBALS["config"]["ldap_dn"];
+
+		if ($obj_ldap_groups->search("cn=*", array("gidnumber", "cn")))
+		{
+			// add items
+			foreach ($obj_ldap_groups->data as $data_group)
+			{
+				if ($data_group["cn"][0])
+				{
+					$structure = NULL;
+					$structure["fieldname"]				= "memberuid_". $data_group["gidnumber"][0];
+					$structure["type"]				= "checkbox";
+					$structure["options"]["label"]			= $data_group["cn"][0];
+					$structure["options"]["no_fieldname"]		= "yes";
+
+					// add checkbox
+					$this->obj_form->add_input($structure);
+
+					// add checkbox to subforms
+					$this->obj_form->subforms["user_groups"][]	= "memberuid_". $data_group["gidnumber"][0];
+				}
+			}
+
+		} // end if groups
+	
+
+
 		// define subforms
 		$this->obj_form->subforms["hidden"]		= array("id_user");
 		$this->obj_form->subforms["submit"]		= array("submit");
 
-		
-		/*
-			Note: We don't load from error data, since there should never
-			be any errors when using this form.
-		*/
+
+		// import data from LDAP
+		if (error_check())
+		{
+			$this->obj_form->load_data_error();
+		}
+		else
+		{
+			// load from LDAP
+			if ($this->obj_user->load_data())
+			{
+				$this->obj_form->structure["username"]["defaultvalue"]		= $this->obj_user->data["uid"];
+
+
+				// check all member users
+				$gidmembership = $this->obj_user->load_data_groups();
+
+				if (count($gidmembership))
+				{
+					foreach ($gidmembership as $gid)
+					{
+						$this->obj_form->structure["memberuid_". $gid]["defaultvalue"] = "on";
+					}
+				}
+			}
+		}
+
+
 
 		return 1;
 	}
@@ -138,10 +180,9 @@ class page_output
 
 
 		// display the form
-		//$this->obj_form->render_form();
+		$this->obj_form->render_form();
 
-		format_msgbox("important", "<p>This feature hasn't been implemented yet, you can add the user to the desired group using the Manage Groups page meanwhile</p>");
-
+		
 	}
 
 }
