@@ -1,6 +1,6 @@
 Summary: LDAPAuthManager Filter Control Application
 Name: ldapauthmanager
-Version: 1.0.0_alpha_1
+Version: 1.0.0_beta_1
 Release: 1.%{?dist}
 License: AGPLv3
 URL: http://www.amberdms.com/ldapauthmanager
@@ -16,8 +16,7 @@ Requires: perl, perl-DBD-MySQL
 Prereq: httpd, php, mysql-server, php-mysql
 
 %description
-LDAPAuthManager is an open-source PHP application providing an easy-to-use interface
-for managing users and groups in an LDAP authentication database.
+LDAPAuthManager is an open-source PHP application providing an easy-to-use interface for managing users and groups in an LDAP authentication database.
 
 %prep
 %setup -q -n ldapauthmanager-%{version}
@@ -85,6 +84,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ldapauthmanager
 
 %changelog
+* Wed Feb 03 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.0_beta_1
+- Beta of first 1.0.0 release
 * Mon Jan 25 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.0_alpha_1
 - Inital Application release
 
