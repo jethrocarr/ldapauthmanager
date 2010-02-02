@@ -48,7 +48,7 @@ else
 			if (user_permissions_get("ldapadmins"))
 			{
 				print "<a class=\"button\" href=\"index.php?page=user_management/users.php\">Manage Users</a> ";
-				print "<a class=\"button\" href=\"index.php?page=user_management/groups.php\">Manage Groups</a> ";
+				print "<a class=\"button\" href=\"index.php?page=group_management/groups.php\">Manage Groups</a> ";
 			}
 
 			print "</p>";
