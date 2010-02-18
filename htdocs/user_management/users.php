@@ -89,8 +89,16 @@ class page_output
 
 			// permissions/groups
 			$structure = NULL;
-			$structure["id"]["column"]	= "gidnumber";
+			$structure["id"]["column"]	= "uidnumber";
 			$this->obj_table->add_link("tbl_lnk_permissions", "user_management/user-permissions.php", $structure);
+
+			// radius options (if enabled)
+			if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
+			{
+				$structure = NULL;
+				$structure["id"]["column"] = "uidnumber";
+				$this->obj_table->add_link("tbl_lnk_radius", "user_management/user-radius.php", $structure);
+			}
 
 			// delete link
 			$structure = NULL;

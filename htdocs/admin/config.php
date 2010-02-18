@@ -52,6 +52,14 @@ class page_output
 		$structure["options"]["no_translate_fieldname"]	= "yes";
 		$this->obj_form->add_input($structure);
 
+		// radius options
+		$structure = NULL;
+		$structure["fieldname"]				= "FEATURE_RADIUS";
+		$structure["type"]				= "checkbox";
+		$structure["options"]["label"]			= "Enable or disable ability to set radius attributes in LDAP database for user accounts";
+		$structure["options"]["no_translate_fieldname"]	= "yes";
+		$this->obj_form->add_input($structure);
+
 
 		// security options
 		$structure = NULL;
@@ -91,6 +99,7 @@ class page_output
 		
 		// define subforms
 		$this->obj_form->subforms["config_seed"]		= array("AUTO_INT_UID", "AUTO_INT_GID");
+		$this->obj_form->subforms["config_features"]		= array("FEATURE_RADIUS");
 		$this->obj_form->subforms["config_security"]		= array("BLACKLIST_ENABLE", "BLACKLIST_LIMIT");
 		$this->obj_form->subforms["config_dateandtime"]		= array("DATEFORMAT", "TIMEZONE_DEFAULT");
 		$this->obj_form->subforms["submit"]			= array("submit");

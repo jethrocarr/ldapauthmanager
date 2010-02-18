@@ -30,6 +30,7 @@ class page_output
 
 		$this->obj_menu_nav->add_item("User Details", "page=user_management/user-view.php&id=". $this->obj_user->id ."");
 		$this->obj_menu_nav->add_item("User Groups", "page=user_management/user-permissions.php&id=". $this->obj_user->id ."", TRUE);
+		$this->obj_menu_nav->add_item("Radius Attributes", "page=user_management/user-radius.php&id=". $this->obj_user->id ."");
 		$this->obj_menu_nav->add_item("Delete User", "page=user_management/user-delete.php&id=". $this->obj_user->id ."");
 	}
 

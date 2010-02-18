@@ -13,6 +13,7 @@
 
 // include main code functions
 require("inc_ldap_usermanagement.php");
+require("inc_radius.php");
 
 
 

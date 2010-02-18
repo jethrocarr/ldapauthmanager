@@ -21,6 +21,7 @@ if (user_permissions_get("ldapadmins"))
 	// fetch all the data
 	$data["AUTO_INT_UID"]			= security_form_input_predefined("int", "AUTO_INT_UID", 1, "");
 	$data["AUTO_INT_GID"]			= security_form_input_predefined("int", "AUTO_INT_GID", 1, "");
+	$data["FEATURE_RADIUS"]			= security_form_input_predefined("checkbox", "FEATURE_RADIUS", 0, "");
 
 	$data["BLACKLIST_ENABLE"]		= security_form_input_predefined("any", "BLACKLIST_ENABLE", 0, "");
 	$data["BLACKLIST_LIMIT"]		= security_form_input_predefined("int", "BLACKLIST_LIMIT", 1, "");
@@ -28,6 +29,16 @@ if (user_permissions_get("ldapadmins"))
 	$data["DATEFORMAT"]			= security_form_input_predefined("any", "DATEFORMAT", 1, "");
 	$data["TIMEZONE_DEFAULT"]		= security_form_input_predefined("any", "TIMEZONE_DEFAULT", 1, "");
 
+
+	if ($data["FEATURE_RADIUS"])
+	{
+		$data["FEATURE_RADIUS"] = "enabled";
+	}
+	else
+	{
+		$data["FEATURE_RADIUS"] = "disabled";
+	}
+		
 
 
 	//// PROCESS DATA ////////////////////////////

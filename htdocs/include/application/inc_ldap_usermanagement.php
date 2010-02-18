@@ -109,6 +109,26 @@ class ldap_auth_manage_user
 			$this->data["userpassword"]	= $this->obj_ldap->data[0]["userpassword"][0];
 
 	
+			// set radius values
+			if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
+			{
+				// standard attributes
+				$radius_attributes = radius_attr_standard();
+
+				foreach ($radius_attributes as $attribute)
+				{
+					$this->data[ $attribute ]		= $this->obj_ldap->data[0][ strtolower($attribute) ][0];
+				}
+
+
+				// vendor attributes
+				for ($i=0; $i < 5; $i++)
+				{
+					$this->data["radiusCheckItem"][$i]	= $this->obj_ldap->data[0]["radiuscheckitem"][$i];
+					$this->data["radiusReplyItem"][$i]	= $this->obj_ldap->data[0]["radiusreplyitem"][$i];
+				}
+
+			}
 
 			return 1;
 		}
@@ -364,6 +384,17 @@ class ldap_auth_manage_user
 			unset($this->data["userpassword_plaintext"]);
 		}
 	
+
+		// if radius is enabled, add the radius profile schema
+		if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
+		{
+			// add object class
+			$this->data["objectclass"][]	= "top";
+			$this->data["objectclass"][]	= "account";
+			$this->data["objectclass"][]	= "posixAccount";
+			$this->data["objectclass"][]	= "shadowAccount";
+			$this->data["objectclass"][]	= "radiusprofile";
+		}
 
 
 		// set the record to manipulate
