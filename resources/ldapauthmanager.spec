@@ -1,6 +1,6 @@
 Summary: LDAPAuthManager Filter Control Application
 Name: ldapauthmanager
-Version: 1.0.0_beta_1
+Version: 1.0.0_beta_2
 Release: 1.%{?dist}
 License: AGPLv3
 URL: http://www.amberdms.com/ldapauthmanager
@@ -84,6 +84,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ldapauthmanager
 
 %changelog
+* Fri Feb 19 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.0_beta_2
+- Upgrade to include radius attribute configuration support as optional feature.
 * Wed Feb 03 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.0_beta_1
 - Beta of first 1.0.0 release
 * Mon Jan 25 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.0_alpha_1

@@ -117,15 +117,25 @@ class ldap_auth_manage_user
 
 				foreach ($radius_attributes as $attribute)
 				{
-					$this->data[ $attribute ]		= $this->obj_ldap->data[0][ strtolower($attribute) ][0];
+					if (!empty($this->obj_ldap->data[0][ strtolower($attribute) ][0]))
+					{
+						$this->data[ $attribute ]		= $this->obj_ldap->data[0][ strtolower($attribute) ][0];
+					}
 				}
 
 
 				// vendor attributes
 				for ($i=0; $i < 5; $i++)
 				{
-					$this->data["radiusCheckItem"][$i]	= $this->obj_ldap->data[0]["radiuscheckitem"][$i];
-					$this->data["radiusReplyItem"][$i]	= $this->obj_ldap->data[0]["radiusreplyitem"][$i];
+					if (!empty($this->obj_ldap->data[0]["radiuscheckitem"][$i]))
+					{
+						$this->data["radiusCheckItem"][$i]	= $this->obj_ldap->data[0]["radiuscheckitem"][$i];
+					}
+
+					if (!empty($this->obj_ldap->data[0]["radiusreplyitem"][$i]))
+					{
+						$this->data["radiusReplyItem"][$i]	= $this->obj_ldap->data[0]["radiusreplyitem"][$i];
+					}
 				}
 
 			}
