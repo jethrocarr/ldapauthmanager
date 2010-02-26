@@ -399,6 +399,7 @@ class ldap_auth_manage_user
 		if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
 		{
 			// add object class
+			$this->data["objectclass"]	= NULL;
 			$this->data["objectclass"][]	= "top";
 			$this->data["objectclass"][]	= "account";
 			$this->data["objectclass"][]	= "posixAccount";
