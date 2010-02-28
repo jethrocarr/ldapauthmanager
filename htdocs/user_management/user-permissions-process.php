@@ -88,6 +88,15 @@ if (user_permissions_get('ldapadmins'))
 		
 		*/
 
+
+		// needed to prevent breakage on some versions of PHP
+                if ($gid_existing == 0)
+                {
+			$gid_existing = array();
+		}
+
+
+		// generate list of affected GID numbers.
 		$gid_affected	= array_merge($gid_existing, $gid_new);
 		$gid_affected	= array_unique($gid_affected);
 
