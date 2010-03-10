@@ -29,6 +29,7 @@ class page_output
 
 		$this->obj_menu_nav->add_item("Group Details", "page=group_management/group-view.php&id=". $this->obj_group->id ."");
 //		$this->obj_menu_nav->add_item("User Groups", "page=group_management/group-permissions.php&id=". $this->obj_group->id ."");
+		$this->obj_menu_nav->add_item("Radius Attributes", "page=group_management/group-radius.php&id=". $this->obj_group->id ."");
 		$this->obj_menu_nav->add_item("Delete Group", "page=group_management/group-delete.php&id=". $this->obj_group->id ."", TRUE);
 	}
 

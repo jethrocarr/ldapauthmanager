@@ -624,6 +624,38 @@ class ldap_auth_manage_group
 				$this->data["memberuid"][$i] = $this->obj_ldap->data[0]["memberuid"][$i];
 			}	
 
+			// set radius values
+			if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
+			{
+				// standard attributes
+				$radius_attributes = radius_attr_standard();
+
+				foreach ($radius_attributes as $attribute)
+				{
+					if (!empty($this->obj_ldap->data[0][ strtolower($attribute) ][0]))
+					{
+						$this->data[ $attribute ]		= $this->obj_ldap->data[0][ strtolower($attribute) ][0];
+					}
+				}
+
+
+				// vendor attributes
+				for ($i=0; $i < 5; $i++)
+				{
+					if (!empty($this->obj_ldap->data[0]["radiuscheckitem"][$i]))
+					{
+						$this->data["radiusCheckItem"][$i]	= $this->obj_ldap->data[0]["radiuscheckitem"][$i];
+					}
+
+					if (!empty($this->obj_ldap->data[0]["radiusreplyitem"][$i]))
+					{
+						$this->data["radiusReplyItem"][$i]	= $this->obj_ldap->data[0]["radiusreplyitem"][$i];
+					}
+				}
+
+			}
+
+
 			return 1;
 		}
 
@@ -764,6 +796,16 @@ class ldap_auth_manage_group
 
 				return 0;
 			}
+		}
+
+		// if radius is enabled, add the radius profile schema
+		if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
+		{
+			// add object class
+			$this->data["objectclass"]	= NULL;
+			$this->data["objectclass"][]	= "top";
+			$this->data["objectclass"][]	= "posixGroup";
+			$this->data["objectclass"][]	= "radiusprofile";
 		}
 
 
