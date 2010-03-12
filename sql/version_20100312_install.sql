@@ -303,6 +303,7 @@ CREATE TABLE IF NOT EXISTS `users_sessions` (
 --
 
 INSERT INTO `config` (`name`, `value`) VALUES ('FEATURE_RADIUS', 'disabled');
+INSERT INTO `config` (`name`, `value`) VALUES ('FEATURE_RADIUS_MAXVENDOR', '10');
 
 INSERT INTO `language` (`id`, `language`, `label`, `translation`) VALUES (NULL, 'en_us', 'config_features', 'Feature Configuration');
 INSERT INTO `language` (`id`, `language`, `label`, `translation`) VALUES (NULL, 'en_us', 'tbl_lnk_radius', 'radius attr');
