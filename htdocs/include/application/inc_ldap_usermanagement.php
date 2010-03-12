@@ -125,7 +125,9 @@ class ldap_auth_manage_user
 
 
 				// vendor attributes
-				for ($i=0; $i < 5; $i++)
+				$num_vendor_fields = sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS_MAXVENDOR'");
+
+				for ($i=0; $i < $num_vendor_fields; $i++)
 				{
 					if (!empty($this->obj_ldap->data[0]["radiuscheckitem"][$i]))
 					{
@@ -640,7 +642,9 @@ class ldap_auth_manage_group
 
 
 				// vendor attributes
-				for ($i=0; $i < 5; $i++)
+				$num_vendor_fields = sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS_MAXVENDOR'");
+
+				for ($i=0; $i < $num_vendor_fields; $i++)
 				{
 					if (!empty($this->obj_ldap->data[0]["radiuscheckitem"][$i]))
 					{

@@ -303,7 +303,6 @@ CREATE TABLE IF NOT EXISTS `users_sessions` (
 --
 
 INSERT INTO `config` (`name`, `value`) VALUES ('FEATURE_RADIUS', 'disabled');
-INSERT INTO `config` (`name`, `value`) VALUES ('FEATURE_RADIUS_MAXVENDOR', '10');
 
 INSERT INTO `language` (`id`, `language`, `label`, `translation`) VALUES (NULL, 'en_us', 'config_features', 'Feature Configuration');
 INSERT INTO `language` (`id`, `language`, `label`, `translation`) VALUES (NULL, 'en_us', 'tbl_lnk_radius', 'radius attr');
@@ -319,7 +318,7 @@ INSERT INTO `menu` (`id`, `priority`, `parent`, `topic`, `link`, `permid`) VALUE
 -- Set Schema Version
 --
 
-UPDATE `config` SET `value` = '20100312' WHERE name='SCHEMA_VERSION' LIMIT 1;
+UPDATE `config` SET `value` = '20100310' WHERE name='SCHEMA_VERSION' LIMIT 1;
 
 
 

@@ -5,7 +5,7 @@
 --
 
 
-INSERT INTO `menu` (`id` , `priority` , `parent` , `topic` , `link` , `permid`) VALUES (NULL , '301', 'manage_groups', '', 'group_management/group-radius.php', '2');
+INSERT INTO `config` (`name`, `value`) VALUES ('FEATURE_RADIUS_MAXVENDOR', '10');
 
 
 --

@@ -21,6 +21,8 @@ if (user_permissions_get('ldapadmins'))
 	$obj_user		= New ldap_auth_manage_user;
 	$obj_user->id		= security_form_input_predefined("int", "id_user", 0, "");
 
+	$num_vendor_fields	= sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS_MAXVENDOR'");
+
 
 	if (!$obj_user->verify_id())
 	{
@@ -57,7 +59,7 @@ if (user_permissions_get('ldapadmins'))
 		$obj_user->data["radiusCheckItem"] = NULL;
 		$obj_user->data["radiusReplyItem"] = NULL;
 
-		for ($i=0; $i < 5; $i++)
+		for ($i=0; $i < $num_vendor_fields; $i++)
 		{
 			$tmp = stripslashes(security_form_input_predefined("any", "vendor_attr_check_$i", 0, ""));
 			if (!empty($tmp))

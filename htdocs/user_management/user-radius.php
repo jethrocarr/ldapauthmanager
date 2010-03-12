@@ -13,15 +13,19 @@ class page_output
 	var $obj_menu_nav;
 	var $obj_form;
 
+	var $num_vendor_fields;
 
 	function page_output()
 	{
 
 		// initate object
-		$this->obj_user		= New ldap_auth_manage_user;
+		$this->obj_user			= New ldap_auth_manage_user;
 
 		// fetch variables
-		$this->obj_user->id = security_script_input('/^[0-9]*$/', $_GET["id"]);
+		$this->obj_user->id		= security_script_input('/^[0-9]*$/', $_GET["id"]);
+
+		// fetch configuration
+		$this->num_vendor_fields	= sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS_MAXVENDOR'");
 
 
 		// define the navigiation menu
@@ -101,6 +105,16 @@ class page_output
 		}
 
 
+		// define subforms
+		$this->obj_form->subforms["user_view"]		= array("username");
+		$this->obj_form->subforms["radius_attr"]	= array("radius_attr_about");
+		
+		foreach ($radius_attributes as $attribute)
+		{
+			$this->obj_form->subforms["radius_attr"][] = $attribute;
+		}
+
+
 		// vendor specific attributes
 		$structure = NULL;
 		$structure["fieldname"]		= "vendor_attr_about";
@@ -108,65 +122,31 @@ class page_output
 		$structure["defaultvalue"]	= "Define vendor-specific radius attributes below as either check or reply attributes in the form of &lt;radius-attribute&gt; &lt;operator&gt; &lt;value&gt;";
 		$this->obj_form->add_input($structure);
 
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_check_0";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
 
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_check_1";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
+		$this->obj_form->subforms["radius_attr_vendor"]	= array("vendor_attr_about");
 
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_check_2";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
+		for ($i=0; $i < $this->num_vendor_fields; $i++)
+		{
+			$structure = NULL;
+			$structure["fieldname"]		= "vendor_attr_reply_$i";
+			$structure["type"]		= "input";
+			$structure["options"]["width"]	= "500";
+			$this->obj_form->add_input($structure);
 
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_check_3";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
+			$this->obj_form->subforms["radius_attr_vendor"][] = "vendor_attr_reply_$i";
+		}
 
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_check_4";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
+		for ($i=0; $i < $this->num_vendor_fields; $i++)
+		{
+			$structure = NULL;
+			$structure["fieldname"]		= "vendor_attr_check_$i";
+			$structure["type"]		= "input";
+			$structure["options"]["width"]	= "500";
+			$this->obj_form->add_input($structure);
 
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_reply_0";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
+			$this->obj_form->subforms["radius_attr_vendor"][] = "vendor_attr_check_$i";
+		}
 
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_reply_1";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
-
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_reply_2";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
-
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_reply_3";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
-
-		$structure = NULL;
-		$structure["fieldname"]		= "vendor_attr_reply_4";
-		$structure["type"]		= "input";
-		$structure["options"]["width"]	= "500";
-		$this->obj_form->add_input($structure);
 
 
 		// hidden section
@@ -184,16 +164,9 @@ class page_output
 		$this->obj_form->add_input($structure);
 		
 		
-		// define subforms
-		$this->obj_form->subforms["user_view"]		= array("username");
-		$this->obj_form->subforms["radius_attr"]	= array("radius_attr_about");
-		
-		foreach ($radius_attributes as $attribute)
-		{
-			$this->obj_form->subforms["radius_attr"][] = $attribute;
-		}
 
-		$this->obj_form->subforms["radius_attr_vendor"]	= array("vendor_attr_about", "vendor_attr_check_0", "vendor_attr_check_1", "vendor_attr_check_2", "vendor_attr_check_3", "vendor_attr_check_4", "vendor_attr_reply_0", "vendor_attr_reply_1", "vendor_attr_reply_2", "vendor_attr_reply_3", "vendor_attr_reply_4");
+
+		// define basis subforms
 		$this->obj_form->subforms["hidden"]		= array("id_user");
 		$this->obj_form->subforms["submit"]		= array("submit");
 
@@ -218,7 +191,7 @@ class page_output
 				}
 
 				// vendor attributes
-				for ($i=0; $i < 5; $i++)
+				for ($i=0; $i < $this->num_vendor_fields; $i++)
 				{
 					$this->obj_form->structure["vendor_attr_check_$i"]["defaultvalue"]	= htmlentities($this->obj_user->data["radiusCheckItem"][$i]);
 					$this->obj_form->structure["vendor_attr_reply_$i"]["defaultvalue"]	= htmlentities($this->obj_user->data["radiusReplyItem"][$i]);
