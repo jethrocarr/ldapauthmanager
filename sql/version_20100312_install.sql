@@ -318,7 +318,7 @@ INSERT INTO `menu` (`id`, `priority`, `parent`, `topic`, `link`, `permid`) VALUE
 -- Set Schema Version
 --
 
-UPDATE `config` SET `value` = '20100310' WHERE name='SCHEMA_VERSION' LIMIT 1;
+UPDATE `config` SET `value` = '20100312' WHERE name='SCHEMA_VERSION' LIMIT 1;
 
 
 
