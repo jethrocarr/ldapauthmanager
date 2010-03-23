@@ -38,23 +38,26 @@ class page_output
 		$this->obj_table->add_column("standard", "username", "uid");
 		$this->obj_table->add_column("standard", "realname", "cn");
 		$this->obj_table->add_column("standard", "uidnumber", "uidnumber");
-		$this->obj_table->add_column("standard", "gidnumber", "uidnumber");
+		$this->obj_table->add_column("standard", "gidnumber", "gidnumber");
+		$this->obj_table->add_column("standard", "loginshell", "loginshell");
+		$this->obj_table->add_column("standard", "homedirectory", "homedirectory");
 
 		// defaults
 		$this->obj_table->columns		= array("username", "realname", "uidnumber", "gidnumber");
-		$this->obj_table->columns_order		= array("username");
-		$this->obj_table->columns_order_options	= array("username", "realname", "uidnumber", "gidnumber");
+//		$this->obj_table->columns_order		= array("username");
+//		$this->obj_table->columns_order_options	= array("username", "realname", "uidnumber", "gidnumber");
+
 
 		// acceptable filter options
-		//$structure = NULL;
-		//$structure["fieldname"] = "searchbox";
-		//$structure["type"]	= "input";
-		//$structure["sql"]	= "username LIKE '%value%' OR realname LIKE '%value%' OR contact_email LIKE '%value%'";
-		//$this->obj_table->add_filter($structure);
+		$structure = NULL;
+		$structure["fieldname"] = "searchbox";
+		$structure["type"]	= "input";
+		$structure["ldap"]	= "(|(uid=value)(uidnumber=value))";
+		$this->obj_table->add_filter($structure);
 
 
 		// load options
-		// $this->obj_table->load_options_form();
+		$this->obj_table->load_options_form();
 
 		$this->obj_table->init_data_ldap();
 		$this->obj_table->load_data_ldap("uid=*", "ou=People,". $GLOBALS["config"]["ldap_dn"]);
@@ -69,7 +72,7 @@ class page_output
 		print "<p>This page allows you to create, edit or delete user accounts, as well as allowing you to define the the account permissions.</p>";
 
 		// display options form
-		//$this->obj_table->render_options_form();
+		$this->obj_table->render_options_form();
 
 		// table data
 		if (!count($this->obj_table->columns))
