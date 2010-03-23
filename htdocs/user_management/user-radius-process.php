@@ -42,7 +42,7 @@ if (user_permissions_get('ldapadmins'))
 		foreach ($radius_attributes as $attribute)
 		{
 			// unset any current values
-			unset($obj_user->data[ $attribute ]);
+			$obj_user->data[ $attribute ] = array();
 
 			// fetch the new values
 			$tmp = stripslashes(security_form_input_predefined("any", $attribute, 0, ""));
@@ -103,14 +103,11 @@ if (user_permissions_get('ldapadmins'))
 		if (!$obj_user->update())
 		{
 			log_write("error", "process", "An error occured whilst attempting to update radius attributes.");
-			print_r($obj_user->data);
-			die("wtf");
 		}
 		else
 		{
 			log_write("notification", "process", "User's radius attributes have been updated.");
 		}
-
 
 		// goto view page
 		header("Location: ../index.php?page=user_management/user-radius.php&id=". $obj_user->id);

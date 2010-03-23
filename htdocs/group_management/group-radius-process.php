@@ -42,7 +42,7 @@ if (user_permissions_get('ldapadmins'))
 		foreach ($radius_attributes as $attribute)
 		{
 			// unset any current values
-			unset($obj_group->data[ $attribute ]);
+			$obj_group->data[ $attribute ] = array();
 
 			// fetch the new values
 			$tmp = stripslashes(security_form_input_predefined("any", $attribute, 0, ""));
