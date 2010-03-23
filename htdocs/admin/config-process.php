@@ -32,7 +32,8 @@ if (user_permissions_get("ldapadmins"))
 
 	if ($data["FEATURE_RADIUS"])
 	{
-		$data["FEATURE_RADIUS"] = "enabled";
+		$data["FEATURE_RADIUS"]			= "enabled";
+		$data["FEATURE_RADIUS_MAXVENDOR"]	= security_form_input_predefined("int", "FEATURE_RADIUS_MAXVENDOR", 1, "");
 	}
 	else
 	{
