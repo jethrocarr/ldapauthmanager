@@ -1,6 +1,6 @@
 Summary: LDAPAuthManager Filter Control Application
 Name: ldapauthmanager
-Version: 1.0.0
+Version: 1.0.1
 Release: 1.%{?dist}
 License: AGPLv3
 URL: http://www.amberdms.com/ldapauthmanager
@@ -84,6 +84,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ldapauthmanager
 
 %changelog
+* Wed Mar 24 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.1
+- Minor bug fixes, new features and 1.0.1 release
 * Fri Mar 12 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.0
 - Minor changes and 1.0.0 release.
 * Wed Mar 10 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.0_beta_3
