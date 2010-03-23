@@ -105,7 +105,7 @@ class page_output
 
 
 		// define subforms
-		$this->obj_form->subforms["user_view"]		= array("username");
+		$this->obj_form->subforms["group_view"]		= array("groupname");
 		$this->obj_form->subforms["radius_attr"]	= array("radius_attr_about");
 		
 		foreach ($radius_attributes as $attribute)
