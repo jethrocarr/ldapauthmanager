@@ -84,6 +84,13 @@ if (user_permissions_get('ldapadmins'))
 	}
 	
 
+	// legacy data safety check
+	if (in_array("account", $obj_user->data["objectclass"]))
+	{
+		log_write("error", "process", "This user needs to be upgraded to use inetOrgPerson before radius attributes can be changed.");
+	}
+
+
 	//// PROCESS DATA ////////////////////////////
 
 

@@ -196,6 +196,14 @@ class page_output
 					$this->obj_form->structure["vendor_attr_check_$i"]["defaultvalue"]	= htmlentities($this->obj_user->data["radiusCheckItem"][$i]);
 					$this->obj_form->structure["vendor_attr_reply_$i"]["defaultvalue"]	= htmlentities($this->obj_user->data["radiusReplyItem"][$i]);
 				}
+
+
+				// legacy data safety check
+				if (in_array("account", $this->obj_user->data["objectclass"]))
+				{
+					log_write("error", "process", "This user needs to be upgraded to use inetOrgPerson before radius attributes can be changed.");
+					return 0;
+				}
 			}
 		}
 	}
