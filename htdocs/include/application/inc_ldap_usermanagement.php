@@ -101,13 +101,19 @@ class ldap_auth_manage_user
 		{
 			// set values
 			$this->data["uid"]		= $this->obj_ldap->data[0]["uid"][0];
-			$this->data["cn"]		= $this->obj_ldap->data[0]["cn"][0];
+			$this->data["sn"]		= $this->obj_ldap->data[0]["sn"][0];
+			$this->data["gn"]		= $this->obj_ldap->data[0]["givenname"][0];
 			$this->data["uidnumber"]	= $this->obj_ldap->data[0]["uidnumber"][0];
 			$this->data["gidnumber"]	= $this->obj_ldap->data[0]["gidnumber"][0];
 			$this->data["loginshell"]	= $this->obj_ldap->data[0]["loginshell"][0];
 			$this->data["homedirectory"]	= $this->obj_ldap->data[0]["homedirectory"][0];
 			$this->data["userpassword"]	= $this->obj_ldap->data[0]["userpassword"][0];
 
+			// fetch object classes - useful for when dealing with legacy users
+			for ($i=0; $i < $this->obj_ldap->data[0]["objectclass"]["count"]; $i++)
+			{
+				$this->data["objectclass"][] = $this->obj_ldap->data[0]["objectclass"][$i];
+			}
 	
 			// set radius values
 			if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
@@ -216,10 +222,14 @@ class ldap_auth_manage_user
 
 		if (!$this->data["uidnumber"] || !$this->data["gidnumber"])
 		{
-			$this->id			 = $this->create_unique_id();
+			$this->id			= $this->create_unique_id();
 
 			$this->data["uidnumber"]	= $this->id;
 			$this->data["gidnumber"]	= $this->id;
+		}
+		else
+		{
+			$this->id			= $this->data["uidnumber"];
 		}
 
 
@@ -228,10 +238,21 @@ class ldap_auth_manage_user
 		*/
 		
 		// set objectclasses
+		$this->data["objectclass"]	= NULL;
 		$this->data["objectclass"][]	= "top";
-		$this->data["objectclass"][]	= "account";
+		$this->data["objectclass"][]	= "inetOrgPerson";
 		$this->data["objectclass"][]	= "posixAccount";
 		$this->data["objectclass"][]	= "shadowAccount";
+
+		// if radius is enabled, add the radius profile schema
+		if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
+		{
+			$this->data["objectclass"][]	= "radiusprofile";
+		}
+
+
+		// set the CN from the name
+		$this->data["cn"] = $this->data["gn"] ." ". $this->data["sn"];
 
 		// password placeholder
 		$this->data["userpassword"]	= "{SSHA}x";
@@ -253,6 +274,8 @@ class ldap_auth_manage_user
 
 		if (!$this->obj_ldap->record_create())
 		{
+			print_r($this->obj_ldap->data);
+			die("fail");
 			return 0;
 		}
 
@@ -365,6 +388,48 @@ class ldap_auth_manage_user
 	{
 		log_write("debug", "ldap_auth_manage_user", "Executing update()");
 
+
+		/*
+			Legacy fix for users who were created belonging to the "account" object class and who need to be converted to the inetorgperson
+			 class.
+			 
+			 Here we need to delete the user & re-create them to resolve the limitation of being unable to change object classes, this does
+			 work OK, but is not ideal since if there are other attributes not supported by the web interface belonging to the user option,
+			 they could potentially be lost
+		*/
+
+		if (in_array("account", $this->data["objectclass"]))
+		{
+			// delete user
+			$this->obj_ldap->record_dn	= "uid=". $this->data["uid"] ."";
+
+			if (!$this->obj_ldap->record_delete())
+			{
+				log_write("debug", "ldap_auth_manage_user", "An error occured whilst attempting to delete user to convert to inetOrgPerson");
+				return 0;
+			}
+
+			$this->id = NULL;
+
+
+			// delete user's group
+			$obj_group	= New ldap_auth_manage_group;
+
+			$obj_group->data["cn"]			= $this->data["uid"];
+			$obj_group->data["gidnumber"]		= $this->data["gidnumber"];
+
+			if (!$obj_group->delete())
+			{	
+				log_write("debug", "ldap_auth_manage_user", "A non-fatal error occured whilst attempting to delete associated user group");
+			}
+
+
+			log_write("notification","ldap_auth_manage_user", "Performed conversion from \"account\" to \"inetOrgPerson\"");
+
+		}
+
+
+
 		// create user if they don't already exist
 		if (!$this->id)
 		{
@@ -376,6 +441,7 @@ class ldap_auth_manage_user
 			}
 		}
 
+		
 
 		// check if the password has been changed
 		if ($this->data["userpassword_plaintext"])
@@ -395,6 +461,10 @@ class ldap_auth_manage_user
 			// remove plaintext
 			unset($this->data["userpassword_plaintext"]);
 		}
+
+
+		// set the CN from the name
+		$this->data["cn"] = $this->data["gn"] ." ". $this->data["sn"];
 	
 
 		// if radius is enabled, add the radius profile schema
@@ -403,7 +473,7 @@ class ldap_auth_manage_user
 			// add object class
 			$this->data["objectclass"]	= NULL;
 			$this->data["objectclass"][]	= "top";
-			$this->data["objectclass"][]	= "account";
+			$this->data["objectclass"][]	= "inetOrgPerson";
 			$this->data["objectclass"][]	= "posixAccount";
 			$this->data["objectclass"][]	= "shadowAccount";
 			$this->data["objectclass"][]	= "radiusprofile";
@@ -422,6 +492,8 @@ class ldap_auth_manage_user
 		}
 
 		// failure
+		print_r($this->data);
+		die("fail");
 		return 0;
 
 	} // end of update()

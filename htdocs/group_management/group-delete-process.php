@@ -60,7 +60,7 @@ if (user_permissions_get('ldapadmins'))
 
 		if (!$obj_group->delete())
 		{
-			log_write("error", "process", "A fatal error occured whilst attempting to delete group. No changes have been made.");
+			log_write("error", "process", "A fatal error occured whilst attempting to delete group.");
 		}
 		else
 		{

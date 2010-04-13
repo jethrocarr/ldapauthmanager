@@ -76,7 +76,13 @@ class page_output
 		$this->obj_form->add_input($structure);
 							
 		$structure = NULL;
-		$structure["fieldname"]		= "realname";
+		$structure["fieldname"]		= "gn";
+		$structure["type"]		= "input";
+		$structure["options"]["req"]	= "yes";
+		$this->obj_form->add_input($structure);
+
+		$structure = NULL;
+		$structure["fieldname"]		= "sn";
 		$structure["type"]		= "input";
 		$structure["options"]["req"]	= "yes";
 		$this->obj_form->add_input($structure);
@@ -143,7 +149,7 @@ class page_output
 		
 		
 		// define subforms
-		$this->obj_form->subforms["user_view"]		= array("username", "realname", "uidnumber", "gidnumber", "loginshell", "homedirectory");
+		$this->obj_form->subforms["user_view"]		= array("username", "gn", "sn", "uidnumber", "gidnumber", "loginshell", "homedirectory");
 		$this->obj_form->subforms["user_password"]	= array("password_message", "password", "password_confirm");
 		$this->obj_form->subforms["hidden"]		= array("id_user");
 		$this->obj_form->subforms["submit"]		= array("submit");
@@ -160,7 +166,8 @@ class page_output
 			if ($this->obj_user->load_data())
 			{
 				$this->obj_form->structure["username"]["defaultvalue"]		= $this->obj_user->data["uid"];
-				$this->obj_form->structure["realname"]["defaultvalue"]		= $this->obj_user->data["cn"];
+				$this->obj_form->structure["gn"]["defaultvalue"]		= $this->obj_user->data["gn"];
+				$this->obj_form->structure["sn"]["defaultvalue"]		= $this->obj_user->data["sn"];
 				$this->obj_form->structure["uidnumber"]["defaultvalue"]		= $this->obj_user->data["uidnumber"];
 				$this->obj_form->structure["gidnumber"]["defaultvalue"]		= $this->obj_user->data["gidnumber"];
 				$this->obj_form->structure["loginshell"]["defaultvalue"]	= $this->obj_user->data["loginshell"];

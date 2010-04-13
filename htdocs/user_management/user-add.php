@@ -49,11 +49,16 @@ class page_output
 		$this->obj_form->add_input($structure);
 							
 		$structure = NULL;
-		$structure["fieldname"]		= "realname";
+		$structure["fieldname"]		= "gn";
 		$structure["type"]		= "input";
 		$structure["options"]["req"]	= "yes";
 		$this->obj_form->add_input($structure);
 
+		$structure = NULL;
+		$structure["fieldname"]		= "sn";
+		$structure["type"]		= "input";
+		$structure["options"]["req"]	= "yes";
+		$this->obj_form->add_input($structure);
 
 		$structure = NULL;
 		$structure["fieldname"] 	= "uidnumber";
@@ -107,7 +112,7 @@ class page_output
 		
 		
 		// define subforms
-		$this->obj_form->subforms["user_view"]		= array("username", "realname", "uidnumber", "gidnumber", "loginshell", "homedirectory");
+		$this->obj_form->subforms["user_view"]		= array("username", "gn", "sn", "uidnumber", "gidnumber", "loginshell", "homedirectory");
 		$this->obj_form->subforms["user_password"]	= array("password", "password_confirm");
 		$this->obj_form->subforms["submit"]		= array("submit");
 

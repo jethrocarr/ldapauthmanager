@@ -43,8 +43,9 @@ if (user_permissions_get('ldapadmins'))
 		}
 
 		// basic fields
-		$obj_user->data["cn"]			= security_form_input_predefined("any", "realname", 1, "");
 		$obj_user->data["uid"]			= security_form_input_predefined("any", "username", 1, "");
+		$obj_user->data["gn"]			= security_form_input_predefined("any", "gn", 1, "");
+		$obj_user->data["sn"]			= security_form_input_predefined("any", "sn", 1, "");
 		$obj_user->data["uidnumber"]		= security_form_input_predefined("int", "uidnumber", 3, "");
 		$obj_user->data["gidnumber"]		= security_form_input_predefined("int", "gidnumber", 3, "");
 		$obj_user->data["loginshell"]		= security_form_input_predefined("any", "loginshell", 1, "");
@@ -55,8 +56,9 @@ if (user_permissions_get('ldapadmins'))
 		$mode = "add";
 
 		// basic fields
-		$obj_user->data["cn"]			= security_form_input_predefined("any", "realname", 1, "");
 		$obj_user->data["uid"]			= security_form_input_predefined("any", "username", 1, "");
+		$obj_user->data["gn"]			= security_form_input_predefined("any", "gn", 1, "");
+		$obj_user->data["sn"]			= security_form_input_predefined("any", "sn", 1, "");
 		$obj_user->data["uidnumber"]		= security_form_input_predefined("int", "uidnumber", 0, "");
 		$obj_user->data["gidnumber"]		= security_form_input_predefined("int", "gidnumber", 0, "");
 		$obj_user->data["loginshell"]		= security_form_input_predefined("any", "loginshell", 1, "");
