@@ -23,7 +23,8 @@ if (user_online())
 	////// INPUT PROCESSING ////////////////////////
 
 	// basic fields
-	$data["realname"]		= security_form_input_predefined("any", "realname", 1, "");
+	$data["gn"]			= security_form_input_predefined("any", "gn", 1, "");
+	$data["sn"]			= security_form_input_predefined("any", "sn", 1, "");
 
 	// remember these values for error handling
 	$data["username"]		= security_form_input_predefined("any", "username", 1, "");
@@ -80,7 +81,8 @@ if (user_online())
 
 
 		// update desired fields
-		$obj_user->data["cn"]		= $data["realname"];
+		$obj_user->data["gn"]		= $data["gn"];
+		$obj_user->data["sn"]		= $data["sn"];
 
 
 		// generate new password if required		
