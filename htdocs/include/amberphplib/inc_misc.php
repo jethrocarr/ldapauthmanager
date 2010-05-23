@@ -99,7 +99,45 @@ function config_generate_uniqueid($config_name, $check_sql)
 
 
 
+/* ARRAY FUNCTIONS */
 
+
+/*;
+	array_insert_after
+	
+	Inserts an array into another array after a certain key
+	http://stackoverflow.com/questions/1783089/array-splice-for-associative-arrays/1783125#1783125
+	Values
+	input	array
+	key		key you want to splice 
+	array	Filename or path
+
+	Returns
+	array		file extension (lowercase)
+*/
+function array_insert_after($input, $key, $segment)
+{
+//	# Insert at offset 2
+	$offset = 0;
+	
+	foreach($input as $array_key => $values)
+	{
+		$offset++;
+		if($key == $array_key) 
+		{
+			break;
+		}
+	} 
+	log_debug("misc", "Inserting data into array after $key, offset $offset");
+	
+	
+	$output = array_slice($input, 0, $offset, true) +
+	$segment +
+	array_slice($input, $offset, NULL, true);
+	
+	
+	return $output;
+}
 
 
 /* FORMATTING/DISPLAY FUNCTIONS */
@@ -744,8 +782,8 @@ function log_error_render()
 {
         if ($_SESSION["error"]["message"])
         {
-		print "<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">";
-                print "<tr><td bgcolor=\"#ffeda4\" style=\"border: 1px dashed #dc6d00; padding: 3px;\">";
+		print "<table class=\"error_table\">";
+                print "<tr><td class=\"error_td\">";
                 print "<p><b>Error:</b><br><br>";
 
 		foreach ($_SESSION["error"]["message"] as $errormsg)
@@ -769,8 +807,8 @@ function log_notification_render()
 {
         if (isset($_SESSION["notification"]["message"]) && !isset($_SESSION["error"]["message"]))
         {
-		print "<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">";
-                print "<tr><td bgcolor=\"#c7e8ed\" style=\"border: 1px dashed #374893; padding: 3px;\">";
+		print "<table class=\"notification_table\">";
+                print "<tr><td class=\"notification_td\">";
                 print "<p><b>Notification:</b><br><br>";
 		
 		foreach ($_SESSION["notification"]["message"] as $notificationmsg)
@@ -1121,5 +1159,73 @@ function dir_list_contents($directory='.')
 
 	return $files;
 }
+
+
+/*
+	IPv4 Networking Functions
+*/
+
+
+/*
+	ipv4_subnet_members
+
+	Returns an array of all IP addresses in the provided subnet
+
+	Fields
+	address_with_cidr	IP and subnet in CIDR notation (eg: 192.168.0.0/24)
+	include_network		(optional, default == FALSE) Return the network and broadcast addresses too.
+
+	Returns
+	0		Failure
+	array		Array of all IPs belonging to subnet
+*/
+
+function ipv4_subnet_members($address_with_cidr, $include_network = FALSE)
+{
+	log_write("debug", "inc_misc", "Executing ipv4_subnet_members($address_with_cidr, $include_network)");
+
+	$address = explode('/', $address_with_cidr);			// eg: 192.168.0.0/24
+
+
+	// calculate subnet mask
+	$bin = NULL;
+
+	for ($i = 1; $i <= 32; $i++)
+	{
+		$bin .= $address[1] >= $i ? '1' : '0';
+	}
+
+	// calculate key values
+	$long_netmask	= bindec($bin);					// eg: 255.255.255.0
+	$long_network	= ip2long($address[0]);				// eg: 192.168.0.0
+	$long_broadcast	= ($long_network | ~($long_netmask));		// eg: 192.168.0.255
+
+
+	// run through the range and generate all possible IPs
+	// do not include mask/network IPs
+	$return = array();
+
+	if ($include_network)
+	{
+		// include network ranges
+		for ($i = $long_network; $i <= $long_broadcast; $i++)
+		{
+			$return[] = long2ip($i);
+		}
+	}
+	else
+	{
+		// include network ranges
+		for ($i = ($long_network + 1); $i < $long_broadcast; $i++)
+		{
+			$return[] = long2ip($i);
+		}
+	}
+
+	return $return;
+
+} // end of ipv4_subnet_members
+
+
 
 ?>

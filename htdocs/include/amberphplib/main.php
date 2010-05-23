@@ -38,7 +38,7 @@ function log_debug($category, $content)
 
 function log_write($type, $category, $content)
 {
-	if (isset($_SESSION["user"]["debug"]))
+	if (!empty($_SESSION["user"]["debug"]))
 	{
 		// write log record
 		$log_record = array();
@@ -138,6 +138,31 @@ require("inc_phone_home.php");
 
 
 log_debug("start", "Framework Load Complete.");
+
+
+/*
+	Load Application Configuration
+
+	Some configuration is done locally (such as DB auth details), however most configuration is stored
+	inside the database to provide easier management, display and validation of configuration.
+*/
+
+log_debug("start", "Loading configuration from database");
+
+$sql_config_obj			= New sql_query;
+$sql_config_obj->string		= "SELECT name, value FROM config ORDER BY name";
+$sql_config_obj->execute();
+$sql_config_obj->fetch_array();
+
+foreach ($sql_config_obj->data as $data_config)
+{
+	$GLOBALS["config"][ $data_config["name"] ] = $data_config["value"];
+}
+
+unset($sql_config_obj);
+
+
+
 
 
 /*

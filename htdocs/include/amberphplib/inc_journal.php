@@ -1624,13 +1624,16 @@ class journal_process extends journal_base
 		{
 			$sql_obj->trans_commit();
 
-			if ($mode == "update")
+			if ($this->structure["type"] != "event")
 			{
-				log_write("notification", "journal_process", "Journal entry updated successfully.");
-			}
-			else
-			{
-				log_write("notification", "journal_process", "New record added to the journal successfully.");
+				if ($mode == "update")
+				{
+					log_write("notification", "journal_process", "Journal entry updated successfully.");
+				}
+				else
+				{
+					log_write("notification", "journal_process", "New record added to the journal successfully.");
+				}
 			}
 
 			return 1;
@@ -1766,7 +1769,7 @@ function journal_quickadd_event($journalname, $customid, $message)
 		
 	$journal->prepare_set_title($message);
 
-	return $journal->action_create();
+	return $journal->action_update();
 }
 
 

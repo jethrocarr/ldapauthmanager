@@ -314,6 +314,14 @@ class form_input
 		{
 			print "<tr class=\"form_error\">";
 		}
+		elseif ($this->structure[$fieldname]["options"]["css_row_class"])
+		{
+			print "<tr class=\"". $this->structure[$fieldname]["options"]["css_row_class"] ."\">";
+		}
+		elseif ($this->structure[$fieldname]["options"]["css_row_id"])
+		{
+			print "<tr id=\"". $this->structure[$fieldname]["options"]["css_row_id"] ."\">";
+		}
 		else
 		{
 			print "<tr id=\"$fieldname\">";
@@ -414,6 +422,7 @@ class form_input
 			$option_array["type"]			Type of form input
 
 				input		- standard input box
+				money		- standard input box with formating for money entry
 				password	- password input box
 				hidden		- hidden field
 				text		- text only display, with hidden field as well
@@ -450,6 +459,9 @@ class form_input
 										^ - OBSOLETE: this option should be replaced by autoselect option		
 						["autoselect"]			Enabling this option will cause a radio or dropdown with just a single
 										entry to auto-select the single entry.
+						["css_row_class"]		Set the CSS class to a custom option for the rendered table row.
+						["css_row_id"]			Set the CSS id to a custom option for the rendered table row.
+											(note: by default, table rows have their ID set to the name of the fieldname)
 		
 			$option_array["values"] = array();			Array of values - used for radio or dropdown type fields
 			$option_array["translations"] = array();		Associate array used for labeling the values in radio or dropdown type fields
@@ -493,6 +505,59 @@ class form_input
 				}
 
 			break;
+
+
+			case "money":
+				// set default size
+				if (!isset($this->structure[$fieldname]["options"]["width"]))
+				{
+					$this->structure[$fieldname]["options"]["width"] = 50;
+				}
+
+
+				// optional prefix label/description
+				if (isset($this->structure[$fieldname]["options"]["prelabel"]))
+				{
+					print $this->structure[$fieldname]["options"]["prelabel"];
+				}
+
+
+				// check where to set the currency symbol
+				$position = sql_get_singlevalue("SELECT value FROM config WHERE name='CURRENCY_DEFAULT_SYMBOL_POSITION'");
+
+				if ($position == "before")
+				{
+					print sql_get_singlevalue("SELECT value FROM config WHERE name='CURRENCY_DEFAULT_SYMBOL'") ." ";
+				}
+	
+		
+				// display
+				print "<input name=\"$fieldname\" ";
+				if (isset($this->structure[$fieldname]["defaultvalue"]))
+				{
+					print "value=\"". $this->structure[$fieldname]["defaultvalue"] ."\" ";
+				}
+
+				if (isset($this->structure[$fieldname]["options"]["max_length"]))
+					print "maxlength=\"". $this->structure[$fieldname]["options"]["max_length"] ."\" ";
+				
+				print "style=\"width: ". $this->structure[$fieldname]["options"]["width"] ."px;\">";
+
+
+				if ($position == "after")
+				{
+					print " ". sql_get_singlevalue("SELECT value FROM config WHERE name='CURRENCY_DEFAULT_SYMBOL'");
+				}
+
+				print " ". sql_get_singlevalue("SELECT value FROM config WHERE name='CURRENCY_DEFAULT_NAME'");
+
+				// optional label/description
+				if (isset($this->structure[$fieldname]["options"]["label"]))
+				{
+					print $this->structure[$fieldname]["options"]["label"];
+				}
+			break;
+
 
 			case "password":
 				
@@ -795,7 +860,8 @@ class form_input
 						print "\" ";
 					}
 					
-					print "type=\"radio\" style=\"border: 0px\" name=\"$fieldname\" value=\"$value\">" . $translations[$value] ."<br>";
+					print "type=\"radio\" style=\"border: 0px\" name=\"$fieldname\" value=\"$value\" id=\"". $fieldname ."_". $value ."\">";
+					print "<label for=\"". $fieldname ."_". $value ."\">". $translations[$value] ."</label><br>";
 				}
 
 				// optional label/description
@@ -815,6 +881,7 @@ class form_input
 				}
 
 
+				// render form field
 				print "<input ";
 
 				if (isset($this->structure[$fieldname]["defaultvalue"]))
@@ -824,17 +891,6 @@ class form_input
 						print "checked ";
 					}
 				}
-
-				if (isset($this->structure[$fieldname]["options"]["label"]))
-				{
-					$translation = $this->structure[$fieldname]["options"]["label"];
-				}
-				else
-				{
-					$translation = language_translate_string($this->language, $fieldname);
-				}
-
-
 				// if actions enabled, configure all the actions that have been defined
 				if (isset($this->actions[$fieldname]))
 				{
@@ -862,8 +918,22 @@ class form_input
 					print "\" ";
 				}
 
+				print "type=\"checkbox\" style=\"border: 0px\" name=\"". $fieldname ."\" id=\"". $fieldname ."\">";
 
-				print "type=\"checkbox\" style=\"border: 0px\" name=\"". $fieldname ."\">". $translation ."<br>";
+
+
+				// post field label
+				if (isset($this->structure[$fieldname]["options"]["label"]))
+				{
+					$translation = $this->structure[$fieldname]["options"]["label"];
+				}
+				else
+				{
+					$translation = language_translate_string($this->language, $fieldname);
+				}
+
+				print "<label for=\"$fieldname\">$translation</label><br>";
+
 
 			break;
 
@@ -1243,39 +1313,54 @@ function form_helper_prepare_valuesfromdb($sqlquery)
 {
 	log_debug("form", "Executing form_helper_prepare_valuesfromdb($sqlquery)");
 	
-	$sql_obj		= New sql_query;
-	$sql_obj->string	= $sqlquery;
-	
-	$sql_obj->execute();
-	
-	if ($sql_obj->num_rows())
+
+	// fetch from cache (if it exists)
+	if (isset($GLOBALS["cache"]["form_sql"][$sqlquery]))
 	{
-		$sql_obj->fetch_array();
-		foreach ($sql_obj->data as $data)
+		log_write("debug", "form", "Fetching form DB results from cache");
+
+		return $GLOBALS["cache"]["form_sql"][$sqlquery];
+	}
+	else
+	{
+		// fetch data from SQL DB
+		$sql_obj		= New sql_query;
+		$sql_obj->string	= $sqlquery;
+		
+		$sql_obj->execute();
+		
+		if ($sql_obj->num_rows())
 		{
-
-			// merge multiple labels into a single label
-			$label = $data["label"];
-
-			for ($i=0; $i < count(array_keys($data)); $i++)
+			$sql_obj->fetch_array();
+			foreach ($sql_obj->data as $data)
 			{
-				if (!empty($data["label$i"]))
+
+				// merge multiple labels into a single label
+				$label = $data["label"];
+
+				for ($i=0; $i < count(array_keys($data)); $i++)
 				{
-					$label .= " -- ". $data["label$i"];
+					if (!empty($data["label$i"]))
+					{
+						$label .= " -- ". $data["label$i"];
+					}
+				}
+				
+
+				// only add an option if there is an id and label for it
+				if ($data["id"] && $label)
+				{
+					$structure["values"][]				= $data["id"];
+					$structure["translations"][ $data["id"] ]	= $label;
 				}
 			}
-			
 
-			// only add an option if there is an id and label for it
-			if ($data["id"] && $label)
-			{
-				$structure["values"][]				= $data["id"];
-				$structure["translations"][ $data["id"] ]	= $label;
-			}
+			// save structure to cache
+			$GLOBALS["cache"]["form_sql"][$sqlquery] = $structure;
+
+			// return the structure
+			return $structure;
 		}
-
-		// return the structure
-		return $structure;
 	}
 
 	return 0;
