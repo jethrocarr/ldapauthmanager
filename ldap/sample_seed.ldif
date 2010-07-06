@@ -1,0 +1,87 @@
+#
+# This is a seed file for an LDAP directory suitable for use with LDAPAuthManager
+#
+# It will setup a structure under ou=auth, dc=example, dc=com
+#
+# See https://www.amberdms.com/projects/p/oss-ldapauthmanager/page/OpenLDAP-Setup/ for further details.
+#
+
+# Basic Organisation Units
+dn: dc=example,dc=com
+dc: example
+objectClass: top
+objectClass: domain
+
+dn: ou=auth, dc=example, dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: auth
+
+dn: ou=People, ou=auth, dc=example, dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Group, ou=auth, dc=example, dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: Group
+
+# Inital User
+dn: uid=setup,ou=People,ou=auth,dc=example,dc=com
+uid: setup
+cn: Setup User
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+loginShell: /bin/bash
+uidNumber: 1001
+gidNumber: 1001
+homeDirectory: /home/setup
+userPassword: {SSHA}REPLACE_THIS
+
+dn: cn=setup,ou=Group,ou=auth,dc=example,dc=com
+objectClass: posixGroup
+objectClass: top
+cn: setup
+gidNumber: 1001
+userPassword: {crypt}x
+
+# Inital ldapadmins group
+dn: cn=ldapadmins,ou=Group,ou=auth,dc=example,dc=com
+objectClass: posixGroup
+objectClass: top
+cn: ldapadmins
+gidNumber: 2001
+userPassword: {crypt}x
+memberUid: setup
+
+# client-root login
+#
+# This account is used by servers logging into the directory server to authenticate users.
+#
+dn: uid=client-root,ou=auth,dc=example,dc=com
+uid: client-root
+cn: client-root
+sn: root
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetorgperson
+userPassword: {SSHA}REPLACE_THIS
+
+# sync login
+#
+# This account is used for replicating with other LDAP servers.
+#
+dn: uid=syncuser,dc=example,dc=com
+uid: syncuser
+cn: syncuser
+sn: syncuser
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetorgperson
+userPassword: {SSHA}REPLACE_THIS
+
