@@ -75,6 +75,22 @@ else
 	}
 	else
         {
+		/*
+			Load the page
+		*/
+
+		log_debug("index", "Loading page $page");
+
+
+		// include PHP code
+		include($page);
+
+
+		// create new page object
+		$page_obj = New page_output;
+
+
+		// page is valid
 		$page_valid = 1;
 	}
 }
@@ -89,26 +105,43 @@ else
 	<title>LDAPAuthManager</title>
 	<meta name="copyright" content="(C)Copyright 2010 Amberdms Ltd">
 
+<?php
+	// include base CSS file
+	print "<link href=\"include/style.css\" rel=\"stylesheet\" type=\"text/css\" />\n";
 
-<script type="text/javascript">
+	// include page-specific css files
+	if (isset($page_obj->requires["css"]))
+	{
+		foreach ($page_obj->requires["css"] as $includefile)
+		{
+			log_write("debug", "main", "Including additional CSS file from default theme $includefile");
+			print "<link href=\"$includefile\" rel=\"stylesheet\" type=\"text/css\" />\n";
+		}
+	}
 
-function obj_hide(obj)
-{
-	document.getElementById(obj).style.display = 'none';
-}
-function obj_show(obj)
-{
-	document.getElementById(obj).style.display = '';
-}
-
-</script>
 	
+	
+	?>
+
+<script type="text/javascript" src="external/jquery/jquery.js"></script>
+<script type="text/javascript" src="include/javascript/javascript.js"></script>
+
+
+<?php
+
+// include page-specific javascript files
+if (isset($page_obj->requires["javascript"]))
+{
+	foreach ($page_obj->requires["javascript"] as $includefile)
+	{
+		print "<script type=\"text/javascript\" src=\"$includefile\"></script>\n";
+	}
+}
+
+?>
+
+
 </head>
-
-<style type="text/css">
-@import url("include/style.css");
-</style>
-
 
 <body>
 
@@ -174,13 +207,6 @@ if ($page_valid == 1)
 {
 	log_debug("index", "Loading page $page");
 
-
-	// include PHP code
-	include($page);
-
-
-	// create new page object
-	$page_obj = New page_output;
 
 	// check permissions
 	if ($page_obj->check_permissions())

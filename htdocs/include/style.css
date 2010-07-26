@@ -617,3 +617,12 @@ div[class*='toggle']
 {
 	text-align:	center;
 }
+
+
+/*logs page*/
+.new_row td
+{
+	display:        	none;
+	background-color:	#c3e5f1;
+}
+
