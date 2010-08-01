@@ -82,6 +82,23 @@ class page_output
 		$structure["options"]["no_translate_fieldname"]	= "yes";
 		$this->obj_form->add_input($structure);
 
+		
+		// logging options
+		$structure = NULL;
+		$structure["fieldname"]					= "LOG_UPDATE_INTERVAL";
+		$structure["type"]					= "input";
+		$structure["options"]["width"]				= "50";
+		$structure["options"]["no_translate_fieldname"]		= "yes";
+		$structure["options"]["label"]				= " seconds";
+		$this->obj_form->add_input($structure);
+
+		$structure = NULL;
+		$structure["fieldname"]					= "LOG_SYNC_KEY";
+		$structure["type"]					= "input";
+		$structure["options"]["no_translate_fieldname"]		= "yes";
+		$structure["options"]["label"]				= " Unique key/password to allow uploading of log records (blank to disable)";
+		$this->obj_form->add_input($structure);
+
 
 		// misc	
 		$structure = form_helper_prepare_timezonedropdown("TIMEZONE_DEFAULT");
@@ -109,6 +126,7 @@ class page_output
 		$this->obj_form->subforms["config_features"]		= array("FEATURE_RADIUS", "FEATURE_RADIUS_MAXVENDOR");
 		$this->obj_form->subforms["config_security"]		= array("BLACKLIST_ENABLE", "BLACKLIST_LIMIT");
 		$this->obj_form->subforms["config_dateandtime"]		= array("DATEFORMAT", "TIMEZONE_DEFAULT");
+		$this->obj_form->subforms["config_logging"]		= array("LOG_UPDATE_INTERVAL");
 		$this->obj_form->subforms["submit"]			= array("submit");
 
 		if ($_SESSION["error"]["message"])

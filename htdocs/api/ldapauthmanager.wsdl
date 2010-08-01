@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions name="ldapauthmanager"
+	targetNamespace="http://www.amberdms.com/ldapauthmanager/api/ldapauthmanager.wsdl"
+	xmlns="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:tns="http://www.amberdms.com/ldapauthmanager/api/ldapauthmanager.wsdl"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+
+	<message name='authenticate_request'>
+		<part name='server_name' type='xsd:string'/>
+		<part name='api_auth_key' type='xsd:string'/>
+	</message>
+
+	<message name='authenticate_response'>
+		<part name='return' type='xsd:int'/>
+	</message>
+
+
+	<message name='log_write_request'>
+		<part name='log_timestamp' type='xsd:int'/>
+		<part name='log_type' type='xsd:string'/>
+		<part name='log_content' type='xsd:string'/>
+	</message>
+
+	<message name='log_write_response'>
+		<part name='return' type='xsd:int'/>
+	</message>
+
+
+	<portType name='ldapauthmanager_porttype'>
+
+		<operation name='authenticate'>
+			<input message='tns:authenticate_request'/>
+			<output message='tns:authenticate_response'/>
+		</operation>
+
+		<operation name='log_write'>
+			<input message='tns:log_write_request'/>
+			<output message='tns:log_write_response'/>
+		</operation>
+
+	</portType>
+
+	<binding name='ldapauthmanager_binding' type='tns:ldapauthmanager_porttype'>
+		<soap:binding style='rpc' transport='http://schemas.xmlsoap.org/soap/http'/>
+
+		<operation name='authenticate'>
+			<soap:operation soapAction='ldapauthmanager'/>
+			<input>
+				<soap:body use='encoded' namespace='urn:amberdms:ldapauthmanager' encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'/>
+			</input>
+
+			<output>
+				<soap:body use='encoded' namespace='urn:amberdms:ldapauthmanager' encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'/>
+			</output>
+		</operation>
+
+
+		<operation name='log_write'>
+			<soap:operation soapAction='ldapauthmanager'/>
+			<input>
+				<soap:body use='encoded' namespace='urn:amberdms:ldapauthmanager' encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'/>
+			</input>
+
+			<output>
+				<soap:body use='encoded' namespace='urn:amberdms:ldapauthmanager' encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'/>
+			</output>
+		</operation>
+		
+	</binding>
+
+<service name='ldapauthmanager'>
+	<port name='ldapauthmanager_port' binding='ldapauthmanager_binding'>
+		<soap:address location='http://www.amberdms.com/ldapauthmanager/api/ldapauthmanager.php'/>
+	</port>
+</service>
+</definitions>
