@@ -17,7 +17,7 @@ $GLOBALS["config"] = array();
 
 // define the application details
 $GLOBALS["config"]["app_name"]			= "ldapauthmanager";
-$GLOBALS["config"]["app_version"]		= "1.0.3";
+$GLOBALS["config"]["app_version"]		= "1.1.0_beta_1";
 
 
 /*
