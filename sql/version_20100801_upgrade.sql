@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `ldap_servers` (
 
 
 INSERT INTO `config` (`name`, `value`) VALUES ('LOG_UPDATE_INTERVAL', '10');
-
+INSERT INTO `config` (`name`, `value`) VALUES ('AUTH_PERMS_CACHE', 'enabled');
 
 INSERT INTO `menu` (`id`, `priority`, `parent`, `topic`, `link`, `permid`) VALUES (NULL, 175, 	'top', 'menu_logs', 'logs/logs.php', 2);
 INSERT INTO `menu` (`id`, `priority`, `parent`, `topic`, `link`, `permid`) VALUES (NULL, 500, 'top', 'menu_ldap_servers', 'servers/servers.php', 2);

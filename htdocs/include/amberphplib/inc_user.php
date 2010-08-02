@@ -731,9 +731,20 @@ class user_auth
 		This function is automatically executed when required by the permissions_get(type)
 		function.
 
-		The lookup occurs once for each page load, whilst this does place a bit more load
-		on the server, it's better than caching for the entire session, since otherwise
-		that cache could become stale if the user permissions get changed.
+		By default the caching is only during the duration of the page load, however if
+		the AUTH_PERMS_CACHE value is set to enabled in the config database, the caching
+		will last across the session.
+
+		Typically you want to only cache for the duration of the page rather than the entire
+		session, since any user permission changes will take immediate effect and the impact on
+		the database should be minimal.
+
+		However there are something circumstances where loading the permissions for every page
+		load can cause annoyances, for example when using LDAP authentication it will cause a request
+		against the LDAP session for every page load.
+
+		Of course, session caching means that the user permissions can become stale and users must then
+		logout and back in to get new permissions.
 
 		Returns
 		0		Failure
@@ -746,6 +757,20 @@ class user_auth
 		// erase any existing cache
 		$GLOBALS["cache"]["user"]["perms"] = array();
 
+
+		// check permissions cache option - should we cache over a session or not?
+		if ($GLOBALS["config"]["AUTH_PERMS_CACHE"] == "enabled")
+		{
+			// check for cache
+			if ($_SESSION["user"]["cache"]["perms"])
+			{
+				log_write("debug", "user_auth", "Loading user permissions from session cache");
+
+				$GLOBALS["cache"]["user"]["perms"] = $_SESSION["user"]["cache"]["perms"];
+
+				return 1;
+			}
+		}
 
 		// make sure the user is logged in
 		if (!$this->check_online())
@@ -806,8 +831,6 @@ class user_auth
 							}
 						}
 					} // end of loop through groups
-
-					return 1;
 				}
 				else
 				{
@@ -838,6 +861,7 @@ class user_auth
 						// save the permissions that the user has access to, to the cache
 						$GLOBALS["cache"]["user"]["perms"][ $data_perms["type"] ] = 1;
 					}
+	
 				}
 				else
 				{
@@ -848,6 +872,12 @@ class user_auth
 
 		} // end of method processing.
 
+
+		// if enabled, save in session cache
+		if ($GLOBALS["config"]["AUTH_PERMS_CACHE"] == "enabled")
+		{
+			$_SESSION["user"]["cache"]["perms"] = $GLOBALS["cache"]["user"]["perms"];
+		}
 
 		// complete without error
 		return 1;
