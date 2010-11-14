@@ -274,8 +274,6 @@ class ldap_auth_manage_user
 
 		if (!$this->obj_ldap->record_create())
 		{
-			print_r($this->obj_ldap->data);
-			die("fail");
 			return 0;
 		}
 
@@ -492,8 +490,6 @@ class ldap_auth_manage_user
 		}
 
 		// failure
-		print_r($this->data);
-		die("fail");
 		return 0;
 
 	} // end of update()
