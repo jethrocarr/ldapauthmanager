@@ -425,32 +425,112 @@ class user_auth
 					// make sure that both a UID and password exists
 					if ($obj_ldap->data[0]["userpassword"][0] && $obj_ldap->data[0]["uidnumber"][0])
 					{
-						if (preg_match("/^{SSHA}/", $obj_ldap->data[0]["userpassword"][0]))
+						// fetch the hash type
+						preg_match("/^{(\S*)}/", $obj_ldap->data[0]["userpassword"][0], $matches);
+
+						if ($matches[1])
 						{
-							// verify SSHA
-							$orig_hash	= base64_decode(substr($obj_ldap->data[0]["userpassword"][0], 6));
-							$orig_salt	= substr($orig_hash, 20);
-							$orig_hash	= substr($orig_hash, 0, 20);
-							$new_hash	= pack("H*", sha1($password . $orig_salt));
-
-							if ($orig_hash == $new_hash)
+							switch ($matches[1])
 							{
-								// successful authentication! :-D
-								log_debug("user_auth", "Authentication successful");
+								case "SSHA":
+									//
+									// SSHA: Used by default by ldapauthmanager and is the default of slappasswd
+									//
 
-								return $obj_ldap->data[0]["uidnumber"][0];
-							}
-							else
-							{
-								// incorrect password supplied
-								log_debug("user_auth", "Authentication failed due to incorrect password/username combination");
-								return 0;
+									log_debug("user_auth", "User password encrypted as SSHA format");
+
+									// verify SSHA
+									$orig_hash	= base64_decode(substr($obj_ldap->data[0]["userpassword"][0], 6));
+									$orig_salt	= substr($orig_hash, 20);
+									$orig_hash	= substr($orig_hash, 0, 20);
+									$new_hash	= pack("H*", sha1($password . $orig_salt));
+
+									if ($orig_hash == $new_hash)
+									{
+										// successful authentication! :-D
+										log_debug("user_auth", "Authentication successful");
+
+										return $obj_ldap->data[0]["uidnumber"][0];
+									}
+									else
+									{
+										// incorrect password supplied
+										log_debug("user_auth", "Authentication failed due to incorrect password/username combination");
+										return 0;
+									}
+								break;
+
+								case "crypt":
+
+									//
+									// CRYPT: Used as the default by Linux servers, often a MD5 hash rather than original crypt, however
+									// 	  the algorithm and salting method can vary, so we have to do some detection.
+									//
+									
+									log_debug("user_auth", "User password encrypted as CRYPT format");
+
+
+									// fetch the hash only (no header)
+									$orig_hash	= substr($obj_ldap->data[0]["userpassword"][0], 7);
+
+
+									// match the type of hash - it may or may not be MD5
+									if (substr($orig_hash, 0, 3) == '$1$')
+									{
+										// MD5
+										log_debug("user_auth", "Password algorithm is MD5");
+
+										// generate a hash with the salt
+										$orig_salt	= substr($orig_hash, 0, 12);
+										$new_hash	= crypt($password, $orig_salt);
+									}
+									else
+									{
+										// unsupported hash type
+										log_debug("user_auth", "Authentication failed due to unsupported hash \"$orig_hash\" with {crypt} header");
+										return -1;
+									}
+
+									// authenticate the hashes
+									if ($orig_hash == $new_hash)
+									{
+										// successful authentication! :-D
+										log_debug("user_auth", "Authentication successful");
+
+										return $obj_ldap->data[0]["uidnumber"][0];
+									}
+									else
+									{
+										// incorrect password supplied
+										log_debug("user_auth", "Authentication failed due to incorrect password/username combination");
+										return 0;
+									}
+								break;
+
+
+								case "MD5":
+								case "SHA":
+									
+									// unknown password crypt format
+									log_debug("user_auth", "Passwords in crypt format \"". $matches[1] ."\" are intentionally unsupported due to lack of salting - use SSHA or SMD5 instead");
+									return -1;
+
+								break;
+
+
+								default:
+									
+									// unknown password crypt format
+									log_debug("user_auth", "Unknown password crypt format \"". $matches[1] ."\"");
+									return -1;
+
+								break;
 							}
 						}
 						else
 						{
-							// unknown password crypt format
-							log_debug("user_auth", "Unknown password crypt format!");
+							// no crypt header?
+							log_debug("user_auth", "No crypt header on LDAP passwords, unencrypted or unknown format of password!");
 							return -1;
 						}
 					}
