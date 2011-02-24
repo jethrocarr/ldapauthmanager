@@ -26,6 +26,8 @@ $config["ldap_port"]		= "389";					// LDAP server port
 $config["ldap_dn"]		= "ou=auth,dc=example,dc=com";			// DN to run queries under
 $config["ldap_manager_user"]	= "cn=Manager,dc=example,dc=com";		// LDAP manager
 $config["ldap_manager_pwd"]	= "password";
+$config["ldap_ssl"]		= "disable";					// use TLS/SSL - enable/disable
+										// CA for validation is configured in /etc/openldap/ldap.conf
 
 
 

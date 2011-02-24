@@ -75,7 +75,22 @@ class ldap_query
 		}
 		else
 		{
-			log_debug("ldap_query", "Unable to establish version 3 connection, falling back to version 2.");
+			log_debug("ldap_query", "Unable to establish version 3 connection, falling back to version 2. Note that TLS/SSL is not available with version 2.");
+		}
+
+
+		// if SSL/TLS is enabled, we need to use it
+		if ($GLOBALS["config"]["ldap_ssl"] == "enable")
+		{
+			if (ldap_start_tls($this->ldapcon))
+			{
+				log_debug("ldap_query", "Initated TLS/SSL connection to LDAP server.");
+			}
+			else
+			{
+				log_debug("ldap_query", "Unable to initate TLS/SSL connection - check that /etc/openldap/ldap.conf has the CA located for certificate validation.");
+				return 0;
+			}
 		}
 
 
