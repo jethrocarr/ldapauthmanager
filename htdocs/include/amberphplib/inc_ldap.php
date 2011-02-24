@@ -68,6 +68,17 @@ class ldap_query
 		}
 
 
+		// initate LDAP version 3 connection if possible
+		if (ldap_set_option($this->ldapcon, LDAP_OPT_PROTOCOL_VERSION, 3))
+		{
+			log_debug("ldap_query", "Connecting using LDAP version 3");
+		}
+		else
+		{
+			log_debug("ldap_query", "Unable to establish version 3 connection, falling back to version 2.");
+		}
+
+
 		// bind user
 		if (ldap_bind($this->ldapcon, $this->srvcfg["user"], $this->srvcfg["password"]))
 		{
