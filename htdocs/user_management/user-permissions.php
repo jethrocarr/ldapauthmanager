@@ -157,7 +157,7 @@ class page_output
 				// check all member users
 				$gidmembership = $this->obj_user->load_data_groups();
 
-				if (count($gidmembership))
+				if (is_array($gidmembership))
 				{
 					foreach ($gidmembership as $gid)
 					{
