@@ -196,6 +196,11 @@ class ldap_query
 		{
 			return 1;
 		}
+		else
+		{
+			log_write("warning", "ldap_query", "LDAP error: \"". ldap_error($this->ldapcon) ."\"");
+		}
+
 
 		return 0;
 
@@ -228,6 +233,10 @@ class ldap_query
 		{
 			return 1;
 		}
+		else
+		{
+			log_write("warning", "ldap_query", "LDAP error: \"". ldap_error($this->ldapcon) ."\"");
+		}
 
 		return 0;
 
@@ -257,6 +266,11 @@ class ldap_query
 		{
 			return 1;
 		}
+		else
+		{
+			log_write("warning", "ldap_query", "LDAP error: \"". ldap_error($this->ldapcon) ."\"");
+		}
+
 
 		return 0;
 
