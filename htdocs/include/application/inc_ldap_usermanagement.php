@@ -2,7 +2,11 @@
 /*
 	inc_ldap_usermanagement.php
 
-	Provides high-level functions for managing users and groups in an LDAP database.
+	Core class for manipulating LDAP users and groups.
+
+	(c) Copyright 2010 Amberms Ltd <legal@amberdms.com>
+	
+	Licensed under the GNU AGPL software license.
 */
 
 
@@ -46,6 +50,44 @@ class ldap_auth_manage_user
 
 
 	/*
+		list_users
+
+		Fetches a list of users with uidnumber and username information, saves into the $this->data array.
+
+		Returns
+		0	Failure to query LDAP
+		1	Success
+	*/
+	function list_users()
+	{
+		log_debug("ldap_auth_manage_user", "Executing list_users()");
+
+
+		// fetch all users
+		if ($this->obj_ldap->search("uidnumber=*", array("uidnumber", "uid")))
+		{
+			log_debug("ldap_auth_manager_user", "Found a total of ". $this->obj_ldap->data_num_rows ." users");
+
+			$this->data = array();
+
+			for ($i=0; $i < $this->obj_ldap->data_num_rows; $i++)
+			{
+				// set values
+				$this->data[$i]["uidnumber"]	= $this->obj_ldap->data[$i]["uidnumber"][0];
+				$this->data[$i]["uid"]		= $this->obj_ldap->data[$i]["uid"][0];
+			}
+
+			return 1;
+		}
+
+		return 0;
+
+	}
+
+
+
+
+	/*
 		verify_id
 
 		Checks that the provided ID is a valid user
@@ -80,6 +122,41 @@ class ldap_auth_manage_user
 
 
 
+	/*
+		verify_username
+
+		Checks that the provided username belongs to a valid user and sets
+		and returns the UID.
+
+		Results
+		0	Failure to find the ID
+		#	User ID
+	*/
+
+	function verify_username($username)
+	{
+		log_debug("ldap_auth_manage_user", "Executing verify_username($username)");
+
+		// run query against users
+		$this->obj_ldap->search("uid=". $username, array("uidnumber"));
+
+		if ($this->obj_ldap->data_num_rows)
+		{
+			$this->id = $this->obj_ldap->data[0]["uidnumber"][0];
+
+			return $this->id;
+		}
+		else
+		{
+			log_write("debug", "page", "Invalid user ". $this->id ." requested");
+		}
+
+		return 0;
+
+	} // end of verify_username
+
+
+
 
 	/*
 		load_data
@@ -93,6 +170,8 @@ class ldap_auth_manage_user
 	function load_data()
 	{
 		log_debug("ldap_auth_manage_user", "Executing load_data()");
+
+		$this->data = array();
 
 		// fetch all user attributes
 		$this->obj_ldap->search("uidnumber=". $this->id);
@@ -222,10 +301,17 @@ class ldap_auth_manage_user
 
 		if (!$this->data["uidnumber"] || !$this->data["gidnumber"])
 		{
-			$this->id			= $this->create_unique_id();
+			$this->id				= $this->create_unique_id();
 
-			$this->data["uidnumber"]	= $this->id;
-			$this->data["gidnumber"]	= $this->id;
+			if (!$this->data["uidnumber"])
+			{
+				$this->data["uidnumber"]	= $this->id;
+			}
+
+			if (!$this->data["gidnumber"])
+			{
+				$this->data["gidnumber"]	= $this->id;
+			}
 		}
 		else
 		{
@@ -280,18 +366,33 @@ class ldap_auth_manage_user
 
 
 		/*
-			Create new LDAP group object
+			Check if a group exists with the provided GID, if it doesn't, then
+			we should create it.
 		*/
 
 		$obj_group	= New ldap_auth_manage_group;
+		$obj_group->id	= $this->data["gidnumber"];
 
-		$obj_group->data["cn"]			= $this->data["uid"];
-		$obj_group->data["gidnumber"]		= $this->data["gidnumber"];
+		if ($obj_group->verify_id())
+		{
+			// group exists
+			log_write("debug", "ldap_auth_manage_user", "A group with ID of ". $obj_group->id ." already exists, will not create another");
+		}
+		else
+		{
+			// no group exists.
+			// create a new group
+		
+			$obj_group	= New ldap_auth_manage_group;
 
-		if (!$obj_group->update())
-		{	
-			log_write("debug", "ldap_auth_manage_user", "An error occured whilst attempting to create a group for a new user");
-			return 0;
+			$obj_group->data["cn"]			= $this->data["uid"];
+			$obj_group->data["gidnumber"]		= $this->data["gidnumber"];
+
+			if (!$obj_group->update())
+			{	
+				log_write("debug", "ldap_auth_manage_user", "An error occured whilst attempting to create a group for a new user");
+				return 0;
+			}
 		}
 
 
@@ -324,7 +425,10 @@ class ldap_auth_manage_user
 		$uniqueid	= sql_get_singlevalue("SELECT value FROM config WHERE name='AUTO_INT_UID'");
 
 		if (!$uniqueid)
-			die("Unable to fetch seed value from config database");
+		{
+			log_write("error", "ldap_auth_manager_user", "Unable to fetch seed value from config database");
+			return 0;
+		}
 
 
 		// verify in the LDAP database that this UID is not used.
@@ -527,17 +631,50 @@ class ldap_auth_manage_user
 
 
 		/*
-			Delete matching group
+			Delete matching group, IF both conditions are met
+
+			1. No users belong to the group
+			2. Group name is the same as the username
 		*/
-		$obj_group	= New ldap_auth_manage_group;
 
-		$obj_group->data["cn"]			= $this->data["uid"];
-		$obj_group->data["gidnumber"]		= $this->data["gidnumber"];
+		$delete			= 1;
 
-		if (!$obj_group->delete())
-		{	
-			log_write("debug", "ldap_auth_manage_user", "An error occured whilst attempting to delete associated user group");
-			return 0;
+		$obj_group		= New ldap_auth_manage_group;
+		$obj_group->id		= $this->data["gidnumber"];
+
+
+		// check group memberships
+		$obj_group->load_data();
+
+		foreach ($obj_group->data["memberuid"] as $memberuid)
+		{
+			if ($memberuid != $this->data["uid"])
+			{
+				// not safe to delete, another member is assigned to this group
+				$delete = 0;
+			}
+		}
+
+
+		// check group name == username
+		if ($obj_group->data["cn"] != $this->data["uid"])
+		{
+			$delete = 0;
+		}
+
+
+		// delete the group
+		if ($delete)
+		{
+			if (!$obj_group->delete())
+			{	
+				log_write("debug", "ldap_auth_manage_user", "An error occured whilst attempting to delete associated user group");
+				return 0;
+			}
+		}
+		else
+		{
+			log_write("debug", "ldap_auth_manager_user", "User's group NOT deleted due to usage by other user accounts or non-standard mapping");
 		}
 
 
@@ -625,6 +762,43 @@ class ldap_auth_manage_group
 
 		// set base_dn to run Group lookups in
 		$this->obj_ldap->srvcfg["base_dn"] = "ou=Group,". $GLOBALS["config"]["ldap_dn"];
+	}
+
+
+
+	/*
+		list_groups
+
+		Fetches a list of groups with gidnumber and groupname information, saves into the $this->data array.
+
+		Returns
+		0	Failure to query LDAP
+		1	Success
+	*/
+	function list_groups()
+	{
+		log_debug("ldap_auth_manage_group", "Executing list_groups()");
+
+
+		// fetch all groups
+		if ($this->obj_ldap->search("gidnumber=*", array("gidnumber", "cn")))
+		{
+			log_debug("ldap_auth_manager_group", "Found a total of ". $this->obj_ldap->data_num_rows ." groups");
+
+			$this->data = array();
+
+			for ($i=0; $i < $this->obj_ldap->data_num_rows; $i++)
+			{
+				// set values
+				$this->data[$i]["gidnumber"]	= $this->obj_ldap->data[$i]["gidnumber"][0];
+				$this->data[$i]["cn"]		= $this->obj_ldap->data[$i]["cn"][0];
+			}
+
+			return 1;
+		}
+
+		return 0;
+
 	}
 
 
@@ -808,7 +982,10 @@ class ldap_auth_manage_group
 		$uniqueid	= sql_get_singlevalue("SELECT value FROM config WHERE name='AUTO_INT_GID'");
 
 		if (!$uniqueid)
-			die("Unable to fetch seed value from config database");
+		{
+			log_write("error", "ldap_auth_manage_group", "Unable to fetch seed value from config database");
+			return 0;
+		}
 
 
 		// verify in the LDAP database that this UID is not used.
