@@ -209,7 +209,22 @@ class ldap_auth_manage_user
 				}
 
 
-				// vendor attributes
+				// vendor specific: mikrotik
+				if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"])
+				{
+					$radius_attributes = array_keys(radius_attr_mikrotik());
+
+					foreach ($radius_attributes as $attribute)
+					{
+						if (!empty($this->obj_ldap->data[0][ strtolower($attribute) ][0]))
+						{
+							$this->data[ $attribute ]	= $this->obj_ldap->data[0][ strtolower($attribute) ][0];
+						}
+					}
+				}
+	
+
+				// vendor specific: generic
 				$num_vendor_fields = sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS_MAXVENDOR'");
 
 				for ($i=0; $i < $num_vendor_fields; $i++)
@@ -331,9 +346,16 @@ class ldap_auth_manage_user
 		$this->data["objectclass"][]	= "shadowAccount";
 
 		// if radius is enabled, add the radius profile schema
-		if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
+		if ($GLOBALS["config"]["FEATURE_RADIUS"] != "disabled")
 		{
-			$this->data["objectclass"][]	= "radiusprofile";
+			// standard attributes
+			$this->data["objectclass"][]		= "radiusprofile";
+
+			// vendor specific: mikrotik
+			if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"] == "enabled")
+			{
+				$this->data["objectclass"][]	= "radiusMikrotik";
+			}
 		}
 
 
@@ -570,7 +592,7 @@ class ldap_auth_manage_user
 	
 
 		// if radius is enabled, add the radius profile schema
-		if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
+		if ($GLOBALS["config"]["FEATURE_RADIUS"] != "disabled")
 		{
 			// add object class
 			$this->data["objectclass"]	= NULL;
@@ -579,6 +601,12 @@ class ldap_auth_manage_user
 			$this->data["objectclass"][]	= "posixAccount";
 			$this->data["objectclass"][]	= "shadowAccount";
 			$this->data["objectclass"][]	= "radiusprofile";
+
+			// vendor specific: mikrotik
+			if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"] == "enabled")
+			{
+				$this->data["objectclass"][]	= "radiusMikrotik";
+			}
 		}
 
 

@@ -54,10 +54,51 @@ if (user_permissions_get('ldapadmins'))
 		}
 
 
+		// vendor specific: mikrotik
+		if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"])
+		{
+			$radius_attributes_full	= radius_attr_mikrotik();
+			$radius_attributes	= array_keys($radius_attributes_full);
 
-		// vendor attributes
-		$obj_user->data["radiusCheckItem"] = NULL;
-		$obj_user->data["radiusReplyItem"] = NULL;
+			foreach ($radius_attributes as $attribute)
+			{
+				// unset any current values
+				$obj_user->data[ $attribute ] = array();
+
+
+				// handle based on type
+				switch ($radius_attributes_full[ $attribute] )
+				{
+					case "string":
+						$tmp = stripslashes(security_form_input_predefined("any", $attribute, 0, ""));
+					break;
+
+					case "int":
+					case "bytes":
+					case "gigaword":
+						$tmp = stripslashes(security_form_input_predefined("int", $attribute, 0, ""));
+					break;
+
+					case "bool":
+						$tmp = stripslashes(security_form_input_predefined("checkbox", $attribute, 0, ""));
+					
+						// override
+						$obj_user->data[ $attribute ] = $tmp;
+					break;
+				}
+
+				if (!empty($tmp))
+				{
+					$obj_user->data[ $attribute ] = $tmp;
+				}
+	
+			}
+		}
+
+
+		// vendor specific: generic
+		$obj_user->data["radiusCheckItem"] = array();
+		$obj_user->data["radiusReplyItem"] = array();
 
 		for ($i=0; $i < $num_vendor_fields; $i++)
 		{
@@ -110,6 +151,11 @@ if (user_permissions_get('ldapadmins'))
 		if (!$obj_user->update())
 		{
 			log_write("error", "process", "An error occured whilst attempting to update radius attributes.");
+
+			// tmp
+			print "<pre>";
+			print_r($obj_user->data);
+			print "</pre>";
 		}
 		else
 		{

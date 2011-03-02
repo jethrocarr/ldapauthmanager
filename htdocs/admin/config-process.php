@@ -34,8 +34,18 @@ if (user_permissions_get("ldapadmins"))
 
 	if ($data["FEATURE_RADIUS"])
 	{
-		$data["FEATURE_RADIUS"]			= "enabled";
-		$data["FEATURE_RADIUS_MAXVENDOR"]	= security_form_input_predefined("int", "FEATURE_RADIUS_MAXVENDOR", 1, "");
+		$data["FEATURE_RADIUS"]				= "enabled";
+		$data["FEATURE_RADIUS_MIKROTIK"]		= security_form_input_predefined("checkbox", "FEATURE_RADIUS_MIKROTIK", 0, "");
+		$data["FEATURE_RADIUS_MAXVENDOR"]		= security_form_input_predefined("int", "FEATURE_RADIUS_MAXVENDOR", 1, "");
+		
+		if ($data["FEATURE_RADIUS_MIKROTIK"])
+		{
+			$data["FEATURE_RADIUS_MIKROTIK"]	= "enabled";
+		}
+		else
+		{
+			$data["FEATURE_RADIUS_MIKROTIK"]	= "disabled";
+		}
 	}
 	else
 	{
