@@ -1,0 +1,226 @@
+#############
+#
+# This is an LDAPv3 schemea for OpenLDAP servers to add
+# additional schema and profiles for Mikrotik-specific devices.
+#
+# Tested on OpenLDAP 2.3.43
+#
+# Changelog:
+# 20110302	Jethro Carr <jethro.carr@amberdms.com>
+#
+#
+##############
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.2
+      NAME 'Mikrotik-Recv-Limit'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.3
+      NAME 'Mikrotik-Xmit-Limit'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.4
+      NAME 'Mikrotik-Group'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.5
+      NAME 'Mikrotik-Wireless-Forward'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.6
+      NAME 'Mikrotik-Wireless-Skip-Dot1x'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.27
+      NAME 'Mikrotik-Wireless-Enc-Algo'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.8
+      NAME 'Mikrotik-Wireless-Enc-Key'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.9
+      NAME 'Mikrotik-Rate-Limit'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.10
+      NAME 'Mikrotik-Realm'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.11
+      NAME 'Mikrotik-Host-IP'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.12
+      NAME 'Mikrotik-Mark-Id'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.13
+      NAME 'Mikrotik-Advertise-URL'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.14
+      NAME 'Mikrotik-Advertise-Interval'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.15
+      NAME 'Mikrotik-Recv-Limit-Gigawords'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.16
+      NAME 'Mikrotik-Xmit-Limit-Gigawords'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.17
+      NAME 'Mikrotik-Wireless-PSK'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.18
+      NAME 'Mikrotik-Total-Limit'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.19
+      NAME 'Mikrotik-Total-Limit-Gigawords'
+      DESC ''
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.20
+      NAME 'Mikrotik-Address-List'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.21
+      NAME 'Mikrotik-Wireless-MPKey'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+attributetype
+   ( 1.3.6.1.4.1.14988.1.22
+      NAME 'Mikrotik-Wireless-Comment'
+      DESC ''
+      EQUALITY caseIgnoreIA5Match
+      SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+      SINGLE-VALUE
+   )
+
+
+
+objectclass
+   ( 1.3.6.1.4.1.14988.1.1
+      NAME 'radiusMikrotik'
+      SUP top AUXILIARY
+      DESC ''
+      MUST cn
+      MAY ( Mikrotik-Recv-Limit $
+            Mikrotik-Xmit-Limit $
+            Mikrotik-Group $
+            Mikrotik-Wireless-Forward $
+            Mikrotik-Wireless-Skip-Dot1x $
+            Mikrotik-Wireless-Enc-Algo $
+            Mikrotik-Wireless-Enc-Key $
+            Mikrotik-Rate-Limit $
+            Mikrotik-Realm $
+            Mikrotik-Host-IP $
+            Mikrotik-Mark-Id $
+            Mikrotik-Advertise-URL $
+            Mikrotik-Advertise-Interval $
+            Mikrotik-Recv-Limit-Gigawords $
+            Mikrotik-Xmit-Limit-Gigawords $
+            Mikrotik-Wireless-PSK $
+            Mikrotik-Total-Limit $
+            Mikrotik-Total-Limit-Gigawords $
+            Mikrotik-Address-List $
+            Mikrotik-Wireless-MPKey $
+            Mikrotik-Wireless-Comment )
+   )
+
+

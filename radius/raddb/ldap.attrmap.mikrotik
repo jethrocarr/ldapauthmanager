@@ -1,0 +1,39 @@
+#
+# Mapping of RADIUS dictionary attributes to LDAP directory attributes
+# to be used by LDAP authentication and authorization module (rlm_ldap)
+#
+
+
+#
+# ADD THE FOLLOWING LINES TO /etc/raddb/ldap.attrmap TO ADD MIKROTIK
+# ATTRIBUTE SUPPORT:
+#
+
+
+#
+# Mikrotik Vendor Specific Components
+#
+replyItem	Mikrotik-Wireless-Forward	Mikrotik-Wireless-Forward
+replyItem	Mikrotik-Recv-Limit		Mikrotik-Recv-Limit
+replyItem	Mikrotik-Xmit-Limit		Mikrotik-Xmit-Limit
+replyItem	Mikrotik-Group			Mikrotik-Group
+replyItem	Mikrotik-Wireless-Forward	Mikrotik-Wireless-Forward
+replyItem	Mikrotik-Wireless-Skip-Dot1x	Mikrotik-Wireless-Skip-Dot1x	
+replyItem	Mikrotik-Wireless-Enc-Algo	Mikrotik-Wireless-Enc-Algo
+replyItem	Mikrotik-Wireless-Enc-Key	Mikrotik-Wireless-Enc-Key
+replyItem	Mikrotik-Rate-Limit		Mikrotik-Rate-Limit
+replyItem	Mikrotik-Realm			Mikrotik-Realm
+replyItem	Mikrotik-Host-IP		Mikrotik-Host-IP
+replyItem	Mikrotik-Mark-Id		Mikrotik-Mark-Id
+replyItem	Mikrotik-Advertise-URL		Mikrotik-Advertise-URL
+replyItem	Mikrotik-Advertise-Interval	Mikrotik-Advertise-Interval
+replyItem	Mikrotik-Recv-Limit-Gigawords	Mikrotik-Recv-Limit-Gigawords
+replyItem	Mikrotik-Xmit-Limit-Gigawords	Mikrotik-Xmit-Limit-Gigawords
+replyItem	Mikrotik-Wireless-PSK		Mikrotik-Wireless-PSK
+replyItem	Mikrotik-Total-Limit		Mikrotik-Total-Limit
+replyItem	Mikrotik-Total-Limit-Gigawords	Mikrotik-Total-Limit-Gigawords
+replyItem	Mikrotik-Address-List		Mikrotik-Address-List
+replyItem	Mikrotik-Wireless-MPKey		Mikrotik-Wireless-MPKey
+replyItem	Mikrotik-Wireless-Comment	Mikrotik-Wireless-Comment
+
+
