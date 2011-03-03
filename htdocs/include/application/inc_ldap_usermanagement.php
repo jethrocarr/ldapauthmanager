@@ -210,7 +210,7 @@ class ldap_auth_manage_user
 
 
 				// vendor specific: mikrotik
-				if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"])
+				if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"] == "enabled")
 				{
 					$radius_attributes = array_keys(radius_attr_mikrotik());
 

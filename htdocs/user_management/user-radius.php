@@ -109,7 +109,7 @@ class page_output extends ui_radius_attributes
 				}
 
 				// radius: vendor specific: Mikrotik
-				if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"])
+				if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"] == "enabled")
 				{
 					foreach (array_keys(radius_attr_mikrotik()) as $attribute)
 					{

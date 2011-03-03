@@ -369,7 +369,7 @@ class ui_radius_attributes
 
 
 			// vendor specific: mikrotik
-			if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"])
+			if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"] == "enabled")
 			{
 				$radius_attributes_full	= radius_attr_mikrotik();
 				$radius_attributes	= array_keys($radius_attributes_full);
