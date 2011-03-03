@@ -20,7 +20,7 @@ $GLOBALS["config"]["app_name"]			= "ldapauthmanager";
 $GLOBALS["config"]["app_version"]		= "1.1.0_beta_2";
 
 // define the schema version required
-$GLOBALS["config"]["schema_version"]		= "20100801";
+$GLOBALS["config"]["schema_version"]		= "20110303";
 
 
 
