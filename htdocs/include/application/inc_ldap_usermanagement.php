@@ -911,6 +911,21 @@ class ldap_auth_manage_group
 				}
 
 
+				// vendor specific: mikrotik
+				if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"] == "enabled")
+				{
+					$radius_attributes = array_keys(radius_attr_mikrotik());
+
+					foreach ($radius_attributes as $attribute)
+					{
+						if (!empty($this->obj_ldap->data[0][ strtolower($attribute) ][0]))
+						{
+							$this->data[ $attribute ]	= $this->obj_ldap->data[0][ strtolower($attribute) ][0];
+						}
+					}
+				}
+
+
 				// vendor attributes
 				$num_vendor_fields = sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS_MAXVENDOR'");
 
@@ -1076,13 +1091,20 @@ class ldap_auth_manage_group
 		}
 
 		// if radius is enabled, add the radius profile schema
-		if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") != "disabled")
+		if ($GLOBALS["config"]["FEATURE_RADIUS"] != "disabled")
 		{
 			// add object class
 			$this->data["objectclass"]	= NULL;
 			$this->data["objectclass"][]	= "top";
 			$this->data["objectclass"][]	= "posixGroup";
 			$this->data["objectclass"][]	= "radiusprofile";
+
+			// vendor specific: mikrotik
+			if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"] == "enabled")
+			{
+				$this->data["objectclass"][]	= "radiusMikrotik";
+			}
+
 		}
 
 

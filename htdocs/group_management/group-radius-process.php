@@ -15,82 +15,26 @@ require("../include/application/main.php");
 
 if (user_permissions_get('ldapadmins'))
 {
-	////// INPUT PROCESSING ////////////////////////
 
+	/*
+		Load radius processing form and run logic
+	*/
 
-	$obj_group		= New ldap_auth_manage_group;
-	$obj_group->id		= security_form_input_predefined("int", "id_group", 0, "");
+	$obj_radius		= New ui_radius_attributes;
+	$obj_radius->obj_owner	= New ldap_auth_manage_group;
 
-	$num_vendor_fields	= sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS_MAXVENDOR'");
-
-
-	if (!$obj_group->verify_id())
-	{
-		log_write("error", "process", "The group you have attempted to edit - ". $obj_group->id ." - does not exist in this system.");
-	}
-	else
-	{
-		// load existing data
-		$obj_group->load_data();
-
-		// error handling stuff
-		security_form_input_predefined("any", "groupname", 0, "");
-
-		// standard radius attributes
-		$radius_attributes = radius_attr_standard();
-
-		foreach ($radius_attributes as $attribute)
-		{
-			// unset any current values
-			$obj_group->data[ $attribute ] = array();
-
-			// fetch the new values
-			$tmp = stripslashes(security_form_input_predefined("any", $attribute, 0, ""));
-
-			if (!empty($tmp))
-			{
-				$obj_group->data[ $attribute ] = $tmp;
-			}
-		}
+	$obj_radius->ui_process();
 
 
 
-		// vendor attributes
-		$obj_group->data["radiusCheckItem"] = NULL;
-		$obj_group->data["radiusReplyItem"] = NULL;
-
-		for ($i=0; $i < $num_vendor_fields; $i++)
-		{
-			$tmp = stripslashes(security_form_input_predefined("any", "vendor_attr_check_$i", 0, ""));
-			if (!empty($tmp))
-			{
-				$obj_group->data["radiusCheckItem"][] = $tmp;
-			}
-
-			$tmp = stripslashes(security_form_input_predefined("any", "vendor_attr_reply_$i", 0, ""));
-			if (!empty($tmp))
-			{
-				$obj_group->data["radiusReplyItem"][] = $tmp;
-			}
-		}
-
-	} // end if valid group ID
-
-
-	// verify that the feature is currently enabled
-	if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") == "disabled")
-	{
-		log_write("error", "process", "Radius attribute configuration has been disabled by the administrator. Use the admin configuration to page to enable it if required.");
-	}
-	
-
-	//// PROCESS DATA ////////////////////////////
-
+	/*
+		Check for errors and apply if all good
+	*/
 
 	if (error_check())
 	{
 		$_SESSION["error"]["form"]["group_radius"] = "failed";
-		header("Location: ../index.php?page=group_management/group-radius.php&id=". $obj_group->id);
+		header("Location: ../index.php?page=group_management/group-radius.php&id=". $obj_radius->obj_owner->id);
 		exit(0);
 	}
 	else
@@ -98,22 +42,24 @@ if (user_permissions_get('ldapadmins'))
 		/*
 			Apply Changes
 		*/
-		error_clear();
 
-		if (!$obj_group->update())
+		if (!$obj_radius->obj_owner->update())
 		{
 			log_write("error", "process", "An error occured whilst attempting to update radius attributes.");
-			print_r($obj_group->data);
-			die("wtf");
+		
+			$_SESSION["error"]["form"]["group_radius"] = "failed";
+			header("Location: ../index.php?page=group_management/group-radius.php&id=". $obj_radius->obj_owner->id);
+			exit(0);
 		}
 		else
 		{
+			error_clear();
+
 			log_write("notification", "process", "Group radius attributes have been updated.");
 		}
 
-
 		// goto view page
-		header("Location: ../index.php?page=group_management/group-radius.php&id=". $obj_group->id);
+		header("Location: ../index.php?page=group_management/group-radius.php&id=". $obj_radius->obj_owner->id);
 		exit(0);
 
 

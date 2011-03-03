@@ -15,130 +15,25 @@ require("../include/application/main.php");
 
 if (user_permissions_get('ldapadmins'))
 {
-	////// INPUT PROCESSING ////////////////////////
+	/*
+		Load radius processing form and run logic
+	*/
+
+	$obj_radius		= New ui_radius_attributes;
+	$obj_radius->obj_owner	= New ldap_auth_manage_user;
+
+	$obj_radius->ui_process();
 
 
-	$obj_user		= New ldap_auth_manage_user;
-	$obj_user->id		= security_form_input_predefined("int", "id_user", 0, "");
 
-	$num_vendor_fields	= sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS_MAXVENDOR'");
-
-
-	if (!$obj_user->verify_id())
-	{
-		log_write("error", "process", "The user you have attempted to edit - ". $obj_user->id ." - does not exist in this system.");
-	}
-	else
-	{
-		// load existing data
-		$obj_user->load_data();
-
-		// error handling stuff
-		security_form_input_predefined("any", "username", 0, "");
-
-		// standard radius attributes
-		$radius_attributes = radius_attr_standard();
-
-		foreach ($radius_attributes as $attribute)
-		{
-			// unset any current values
-			$obj_user->data[ $attribute ] = array();
-
-			// fetch the new values
-			$tmp = stripslashes(security_form_input_predefined("any", $attribute, 0, ""));
-
-			if (!empty($tmp))
-			{
-				$obj_user->data[ $attribute ] = $tmp;
-			}
-		}
-
-
-		// vendor specific: mikrotik
-		if ($GLOBALS["config"]["FEATURE_RADIUS_MIKROTIK"])
-		{
-			$radius_attributes_full	= radius_attr_mikrotik();
-			$radius_attributes	= array_keys($radius_attributes_full);
-
-			foreach ($radius_attributes as $attribute)
-			{
-				// unset any current values
-				$obj_user->data[ $attribute ] = array();
-
-
-				// handle based on type
-				switch ($radius_attributes_full[ $attribute] )
-				{
-					case "string":
-						$tmp = stripslashes(security_form_input_predefined("any", $attribute, 0, ""));
-					break;
-
-					case "int":
-					case "bytes":
-					case "gigaword":
-						$tmp = stripslashes(security_form_input_predefined("int", $attribute, 0, ""));
-					break;
-
-					case "bool":
-						$tmp = stripslashes(security_form_input_predefined("checkbox", $attribute, 0, ""));
-					
-						// override
-						$obj_user->data[ $attribute ] = $tmp;
-					break;
-				}
-
-				if (!empty($tmp))
-				{
-					$obj_user->data[ $attribute ] = $tmp;
-				}
-	
-			}
-		}
-
-
-		// vendor specific: generic
-		$obj_user->data["radiusCheckItem"] = array();
-		$obj_user->data["radiusReplyItem"] = array();
-
-		for ($i=0; $i < $num_vendor_fields; $i++)
-		{
-			$tmp = stripslashes(security_form_input_predefined("any", "vendor_attr_check_$i", 0, ""));
-			if (!empty($tmp))
-			{
-				$obj_user->data["radiusCheckItem"][] = $tmp;
-			}
-
-			$tmp = stripslashes(security_form_input_predefined("any", "vendor_attr_reply_$i", 0, ""));
-			if (!empty($tmp))
-			{
-				$obj_user->data["radiusReplyItem"][] = $tmp;
-			}
-		}
-
-	} // end if valid user ID
-
-
-	// verify that the feature is currently enabled
-	if (sql_get_singlevalue("SELECT value FROM config WHERE name='FEATURE_RADIUS' LIMIT 1") == "disabled")
-	{
-		log_write("error", "process", "Radius attribute configuration has been disabled by the administrator. Use the admin configuration to page to enable it if required.");
-	}
-	
-
-	// legacy data safety check
-	if (in_array("account", $obj_user->data["objectclass"]))
-	{
-		log_write("error", "process", "This user needs to be upgraded to use inetOrgPerson before radius attributes can be changed.");
-	}
-
-
-	//// PROCESS DATA ////////////////////////////
-
+	/*
+		Check for errors and apply if all good
+	*/
 
 	if (error_check())
 	{
 		$_SESSION["error"]["form"]["user_radius"] = "failed";
-		header("Location: ../index.php?page=user_management/user-radius.php&id=". $obj_user->id);
+		header("Location: ../index.php?page=user_management/user-radius.php&id=". $obj_radius->obj_owner->id);
 		exit(0);
 	}
 	else
@@ -146,24 +41,24 @@ if (user_permissions_get('ldapadmins'))
 		/*
 			Apply Changes
 		*/
-		error_clear();
 
-		if (!$obj_user->update())
+		if (!$obj_radius->obj_owner->update())
 		{
 			log_write("error", "process", "An error occured whilst attempting to update radius attributes.");
-
-			// tmp
-			print "<pre>";
-			print_r($obj_user->data);
-			print "</pre>";
+		
+			$_SESSION["error"]["form"]["user_radius"] = "failed";
+			header("Location: ../index.php?page=user_management/user-radius.php&id=". $obj_radius->obj_owner->id);
+			exit(0);
 		}
 		else
 		{
+			error_clear();
+
 			log_write("notification", "process", "User's radius attributes have been updated.");
 		}
 
 		// goto view page
-		header("Location: ../index.php?page=user_management/user-radius.php&id=". $obj_user->id);
+		header("Location: ../index.php?page=user_management/user-radius.php&id=". $obj_radius->obj_owner->id);
 		exit(0);
 
 
