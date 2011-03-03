@@ -1,6 +1,6 @@
 Summary: LDAPAuthManager open source LDAP authentication management interface
 Name: ldapauthmanager
-Version: 1.1.0_beta_1
+Version: 1.2.0_beta_1
 Release: 1%{?dist}
 License: AGPLv3
 URL: http://www.amberdms.com/ldapauthmanager
@@ -120,6 +120,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ldapauthmanager/ldap
 %{_datadir}/ldapauthmanager/resources
 %{_datadir}/ldapauthmanager/sql
+%{_datadir}/ldapauthmanager/radius
+
+%doc %{_datadir}/ldapauthmanager/README
+%doc %{_datadir}/ldapauthmanager/docs/AUTHORS
+%doc %{_datadir}/ldapauthmanager/docs/CONTRIBUTORS
+%doc %{_datadir}/ldapauthmanager/docs/COPYING
+
 
 %files scripts
 %defattr(-,root,root)
@@ -130,6 +137,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Mar 03 2011 Jethro Carr <jethro.carr@amberdms.com> 1.2.0_beta_1
+- Implemented Mikrotik-specific vendor extensions.
+* Fri Feb 25 2011 Jethro Carr <jethro.carr@amberdms.com> 1.1.0_beta_2
+- Fixed bugs, added MD5 hash support, add LDAPv3, added TLS/SSL
 * Sun Aug 01 2010 Jethro Carr <jethro.carr@amberdms.com> 1.1.0_beta_1
 - Implemented new logging features
 * Tue Apr 13 2010 Jethro Carr <jethro.carr@amberdms.com> 1.0.2

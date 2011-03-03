@@ -1,0 +1,9 @@
+LDAPAUTHMANAGER
+---------------
+
+A web-based application for managing LDAP users and groups on an LDAP directory
+server such as OpenLDAP.
+
+This software is licensed under the GNU AGPL as detailed in docs/COPYRIGHT
+
+
