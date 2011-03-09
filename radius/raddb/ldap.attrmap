@@ -1,0 +1,99 @@
+#
+# Mapping of RADIUS dictionary attributes to LDAP directory attributes
+# to be used by LDAP authentication and authorization module (rlm_ldap)
+#
+# Format:
+#   ItemType	RADIUS-Attribute-Name		ldapAttributeName
+#
+# Where:
+#   ItemType              = checkItem or replyItem 
+#   RADIUS-Attribute-Name = attribute name in RADIUS dictionary
+#   ldapAttributeName     = attribute name in LDAP schema
+#
+# If $GENERIC$ is specified as RADIUS-Attribute-Name, the line specifies
+# a LDAP attribute which can be used to store any RADIUS 
+# attribute/value-pair in LDAP directory.
+#
+# You should edit this file to suit it to your needs.
+#
+#
+# CUSTOMED FOR USE WITH LDAPAUTHMANAGER SUPPORTED ATTRIBUTES 
+#
+
+checkItem	$GENERIC$			radiusCheckItem
+replyItem	$GENERIC$			radiusReplyItem
+
+checkItem	Auth-Type			radiusAuthType
+checkItem	Simultaneous-Use		radiusSimultaneousUse
+checkItem	Called-Station-Id		radiusCalledStationId
+checkItem	Calling-Station-Id		radiusCallingStationId
+checkItem	LM-Password			sambaLMPassword
+checkItem	NT-Password			sambaNTPassword
+checkItem	SMB-Account-CTRL-TEXT		sambaAcctFlags
+checkItem	Expiration			radiusExpiration
+checkItem	NAS-IP-Address			radiusNASIpAddress
+
+replyItem	Service-Type			radiusServiceType
+replyItem	Framed-Protocol			radiusFramedProtocol
+replyItem	Framed-IP-Address		radiusFramedIPAddress
+replyItem	Framed-IP-Netmask		radiusFramedIPNetmask
+replyItem	Framed-Route			radiusFramedRoute
+replyItem	Framed-Routing			radiusFramedRouting
+replyItem	Framed-Pool			radiusFramedPool		# custom addition
+replyItem	Filter-Id			radiusFilterId
+replyItem	Framed-MTU			radiusFramedMTU
+replyItem	Framed-Compression		radiusFramedCompression
+replyItem	Login-IP-Host			radiusLoginIPHost
+replyItem	Login-Service			radiusLoginService
+replyItem	Login-TCP-Port			radiusLoginTCPPort
+replyItem	Callback-Number			radiusCallbackNumber
+replyItem	Callback-Id			radiusCallbackId
+replyItem	Framed-IPX-Network		radiusFramedIPXNetwork
+replyItem	Class				radiusClass
+replyItem	Session-Timeout			radiusSessionTimeout
+replyItem	Idle-Timeout			radiusIdleTimeout
+replyItem	Termination-Action		radiusTerminationAction
+replyItem	Login-LAT-Service		radiusLoginLATService
+replyItem	Login-LAT-Node			radiusLoginLATNode
+replyItem	Login-LAT-Group			radiusLoginLATGroup
+replyItem	Framed-AppleTalk-Link		radiusFramedAppleTalkLink
+replyItem	Framed-AppleTalk-Network	radiusFramedAppleTalkNetwork
+replyItem	Framed-AppleTalk-Zone		radiusFramedAppleTalkZone
+replyItem	Port-Limit			radiusPortLimit
+replyItem	Login-LAT-Port			radiusLoginLATPort
+replyItem	Reply-Message			radiusReplyMessage
+
+
+#
+# Password compatibility fixes - required for CHAP authentication.
+#
+checkItem	User-Password			userPassword
+
+
+#
+# Mikrotik Vendor Specific Components
+#
+replyItem	Mikrotik-Wireless-Forward	Mikrotik-Wireless-Forward
+replyItem	Mikrotik-Recv-Limit		Mikrotik-Recv-Limit
+replyItem	Mikrotik-Xmit-Limit		Mikrotik-Xmit-Limit
+replyItem	Mikrotik-Group			Mikrotik-Group
+replyItem	Mikrotik-Wireless-Forward	Mikrotik-Wireless-Forward
+replyItem	Mikrotik-Wireless-Skip-Dot1x	Mikrotik-Wireless-Skip-Dot1x	
+replyItem	Mikrotik-Wireless-Enc-Algo	Mikrotik-Wireless-Enc-Algo
+replyItem	Mikrotik-Wireless-Enc-Key	Mikrotik-Wireless-Enc-Key
+replyItem	Mikrotik-Rate-Limit		Mikrotik-Rate-Limit
+replyItem	Mikrotik-Realm			Mikrotik-Realm
+replyItem	Mikrotik-Host-IP		Mikrotik-Host-IP
+replyItem	Mikrotik-Mark-Id		Mikrotik-Mark-Id
+replyItem	Mikrotik-Advertise-URL		Mikrotik-Advertise-URL
+replyItem	Mikrotik-Advertise-Interval	Mikrotik-Advertise-Interval
+replyItem	Mikrotik-Recv-Limit-Gigawords	Mikrotik-Recv-Limit-Gigawords
+replyItem	Mikrotik-Xmit-Limit-Gigawords	Mikrotik-Xmit-Limit-Gigawords
+replyItem	Mikrotik-Wireless-PSK		Mikrotik-Wireless-PSK
+replyItem	Mikrotik-Total-Limit		Mikrotik-Total-Limit
+replyItem	Mikrotik-Total-Limit-Gigawords	Mikrotik-Total-Limit-Gigawords
+replyItem	Mikrotik-Address-List		Mikrotik-Address-List
+replyItem	Mikrotik-Wireless-MPKey		Mikrotik-Wireless-MPKey
+replyItem	Mikrotik-Wireless-Comment	Mikrotik-Wireless-Comment
+
+
