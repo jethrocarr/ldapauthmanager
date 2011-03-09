@@ -366,11 +366,11 @@ class ldap_auth_manage_user
 		switch ($GLOBALS["config"]["AUTH_USERPASSWORD_TYPE"])
 		{
 			case "CLEAR_SIMPLE":
-				$this->data["userpassword"]	= "x";			// TODO: is "x" the correct placeholder?
+				$this->data["userpassword"]	= "";		// must be blank: "x" is a matchable password
 			break;
 
 			case "CLEAR_HEADER":
-				$this->data["userpassword"]	= "{clear}x";		// TODO: is "x" the correct placeholder?
+				$this->data["userpassword"]	= "";		// must be blank: "x" is a matchable password
 			break;
 
 			case "SSHA":	
