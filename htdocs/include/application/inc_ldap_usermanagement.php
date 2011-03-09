@@ -363,7 +363,20 @@ class ldap_auth_manage_user
 		$this->data["cn"] = $this->data["gn"] ." ". $this->data["sn"];
 
 		// password placeholder
-		$this->data["userpassword"]	= "{SSHA}x";
+		switch ($GLOBALS["config"]["AUTH_USERPASSWORD_TYPE"])
+		{
+			case "CLEAR_SIMPLE":
+				$this->data["userpassword"]	= "x";			// TODO: is "x" the correct placeholder?
+			break;
+
+			case "CLEAR_HEADER":
+				$this->data["userpassword"]	= "{clear}x";		// TODO: is "x" the correct placeholder?
+			break;
+
+			case "SSHA":	
+				$this->data["userpassword"]	= "{SSHA}x";
+			break;
+		}
 
 		// set home directory if not provided
 		if (!$this->data["homedirectory"])
@@ -570,17 +583,37 @@ class ldap_auth_manage_user
 		// check if the password has been changed
 		if ($this->data["userpassword_plaintext"])
 		{
-			// generate 4-byte salt
-			$feed	= "0123456789abcdefghijklmnopqrstuvwxyz";
-			$salt	= null;
-
-			for ($i=0; $i < 4; $i++)
+			// hash/format the password in the most appropiate way
+			switch ($GLOBALS["config"]["AUTH_USERPASSWORD_TYPE"])
 			{
-				$salt .= substr($feed, rand(0, strlen($feed)-1), 1);
+				case "CLEAR_SIMPLE":
+					$this->data["userpassword"]	= $this->data["userpassword_plaintext"];
+				break;
+
+				case "CLEAR_HEADER":
+					$this->data["userpassword"]	= "{clear}". base64_encode($this->data["userpassword_plaintext"]) ."";
+				break;
+
+				case "SSHA":	
+
+					// generate 4-byte salt
+					$feed	= "0123456789abcdefghijklmnopqrstuvwxyz";
+					$salt	= null;
+
+					for ($i=0; $i < 4; $i++)
+					{
+						$salt .= substr($feed, rand(0, strlen($feed)-1), 1);
+					}
+
+					// generate new password
+					$this->data["userpassword"]	= "{SSHA}". base64_encode(sha1($this->data["userpassword_plaintext"] . $salt, TRUE) . $salt);
+
+				break;
 			}
 
-			// generate new password
-			$this->data["userpassword"] = "{SSHA}". base64_encode(sha1($this->data["userpassword_plaintext"] . $salt, TRUE) . $salt);
+
+
+			
 
 			// remove plaintext
 			unset($this->data["userpassword_plaintext"]);

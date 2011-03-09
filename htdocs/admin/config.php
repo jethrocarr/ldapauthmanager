@@ -76,6 +76,25 @@ class page_output
 
 
 
+		// credential storage options
+		$structure = NULL;
+		$structure["fieldname"]				= "AUTH_USERPASSWORD_INFO";
+		$structure["type"]				= "message";
+		$structure["defaultvalue"]			= "<p>". lang_trans("AUTH_PASSWORD_INFO") ."</p>";
+		$this->obj_form->add_input($structure);
+
+		$structure = NULL;
+		$structure["fieldname"]				= "AUTH_USERPASSWORD_TYPE";
+		$structure["type"]				= "radio";
+		$structure["values"]				= array("CLEAR_SIMPLE", "CLEAR_HEADER", "SSHA");
+		$structure["translations"]["CLEAR_SIMPLE"]	= "cleartext: password";
+		$structure["translations"]["CLEAR_HEADER"]	= "cleartext: {crypt}password";
+		$structure["translations"]["SSHA"]		= "Salted SHA: {SSHA}EDELKvsEL2q+jOtKBWLp+ht+DFWvgVYo";
+		$this->obj_form->add_input($structure);
+
+		// TODO: future NT-Password and sambaPassword options to go here as checkboxes to enable.
+
+
 		// security options
 		$structure = NULL;
 		$structure["fieldname"]				= "BLACKLIST_ENABLE";
@@ -132,6 +151,7 @@ class page_output
 		// define subforms
 		$this->obj_form->subforms["config_seed"]		= array("AUTO_INT_UID", "AUTO_INT_GID");
 		$this->obj_form->subforms["config_features"]		= array("FEATURE_RADIUS", "FEATURE_RADIUS_MIKROTIK", "FEATURE_RADIUS_MAXVENDOR");
+		$this->obj_form->subforms["config_credentials"]		= array("AUTH_USERPASSWORD_INFO", "AUTH_USERPASSWORD_TYPE");
 		$this->obj_form->subforms["config_security"]		= array("BLACKLIST_ENABLE", "BLACKLIST_LIMIT");
 		$this->obj_form->subforms["config_dateandtime"]		= array("DATEFORMAT", "TIMEZONE_DEFAULT");
 		$this->obj_form->subforms["config_logging"]		= array("LOG_UPDATE_INTERVAL");
