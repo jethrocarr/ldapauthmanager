@@ -518,6 +518,38 @@ class user_auth
 								break;
 
 
+								case "{clear}":
+								case "{cleartext}":
+									
+									//
+									//	Plaintext LDAP Passwords
+									//
+									//	Plaintext passwords are a pretty nasty thing from the POV of a web-based application developer, however
+									//	are still somewhat common in the telco user space, with technologies like CHAP relying on plaintext
+									//	passwords in order for their on-wire encryption to work.
+									//
+									//	We support them here for this reason alone.
+									//
+
+									log_debug("user_auth", "User password NOT ENCRYPTED, using plaintext WITH header");
+
+
+									if ($obj_ldap->data[0]["userpassword"][0] == $password)
+									{
+										log_debug("user_auth", "Authentication successful");
+
+										return $obj_ldap->data[0]["uidnumber"][0];
+									}
+									else
+									{
+										// incorrect password supplied
+										log_debug("user_auth", "Authentication failed due to incorrect password/username combination");
+										return 0;
+									}
+
+								break;
+
+
 								default:
 									
 									// unknown password crypt format
@@ -529,8 +561,33 @@ class user_auth
 						}
 						else
 						{
-							// no crypt header?
-							log_debug("user_auth", "No crypt header on LDAP passwords, unencrypted or unknown format of password!");
+							/*
+								Plaintext LDAP Passwords
+
+								Plaintext passwords are a pretty nasty thing from the POV of a web-based application developer, however
+								are still somewhat common in the telco user space, with technologies like CHAP relying on plaintext
+								passwords in order for their on-wire encryption to work.
+
+								We support them here for this reason alone.
+							*/
+
+							log_debug("user_auth", "User password NOT ENCRYPTED, using plaintext WITHOUT header");
+
+
+							if ($obj_ldap->data[0]["userpassword"][0] == $password)
+							{
+								log_debug("user_auth", "Authentication successful");
+
+								return $obj_ldap->data[0]["uidnumber"][0];
+							}
+							else
+							{
+								// incorrect password supplied
+								log_debug("user_auth", "Authentication failed due to incorrect password/username combination");
+								return 0;
+							}
+
+
 							return -1;
 						}
 					}
