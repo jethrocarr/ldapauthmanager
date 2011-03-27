@@ -1,10 +1,12 @@
 <?php
 /*
-	Sample Configuration File
+	LDAPAuthManager Sample Configuration File
+
+	This file provides the core configuration options such as database logins and debug
+	options. For further control, the configuration page after login offers additional
+	options and features.
 
 	This file should be read-only by the httpd user. All other users should be denied.
-
-	Copy this file to config-settings.php before editing.
 */
 
 

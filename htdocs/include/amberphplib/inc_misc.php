@@ -47,8 +47,8 @@ function config_generate_uniqueid($config_name, $check_sql)
 	
 	$config_name = strtoupper($config_name);
 	
-	$returnvalue	= 0;
-	$uniqueid	= 0;
+	$returnvalue = 0;
+	$uniqueid = 0;
 	
 
 	// fetch the starting ID from the config DB
@@ -56,7 +56,18 @@ function config_generate_uniqueid($config_name, $check_sql)
 
 	if (!$uniqueid)
 		die("Unable to fetch $config_name value from config database");
+	
+	// first set the uniqueid prefix to an empty string, in case the following tests fail	
+	$uniqueid_prefix = '';
+	
+	if (!is_numeric($uniqueid))
+	{
+		preg_match("/^(\S*?)([0-9]*)$/", $uniqueid, $matches);
 
+		$uniqueid_prefix	= $matches[1];
+		$uniqueid		= (int)$matches[2];
+	}
+	
 
 	if ($check_sql)
 	{
@@ -64,7 +75,7 @@ function config_generate_uniqueid($config_name, $check_sql)
 		while ($returnvalue == 0)
 		{
 			$sql_obj		= New sql_query;
-			$sql_obj->string	= str_replace("VALUE", $uniqueid, $check_sql);
+			$sql_obj->string	= str_replace("VALUE", $uniqueid_prefix.$uniqueid, $check_sql);
 			$sql_obj->execute();
 
 			if ($sql_obj->num_rows())
@@ -78,11 +89,12 @@ function config_generate_uniqueid($config_name, $check_sql)
 				$returnvalue = $uniqueid;
 			}
 		}
+		$returnvalue = $uniqueid_prefix.$returnvalue;
 	}
 	else
 	{
 		// conducting no DB checks.
-		$returnvalue = $uniqueid;
+		$returnvalue = $uniqueid_prefix.$uniqueid;
 	}
 	
 
@@ -90,7 +102,7 @@ function config_generate_uniqueid($config_name, $check_sql)
 	$uniqueid++;
 				
 	$sql_obj		= New sql_query;
-	$sql_obj->string	= "UPDATE config SET value='$uniqueid' WHERE name='$config_name'";
+	$sql_obj->string	= "UPDATE config SET value='{$uniqueid_prefix}{$uniqueid}' WHERE name='$config_name'";
 	$sql_obj->execute();
 
 
@@ -351,6 +363,7 @@ function format_size_bytes($string)
 	Supported types:
 	important
 	info
+	bubble
 */
 function format_msgbox($type, $text)
 {
@@ -401,12 +414,13 @@ function format_linkbox($type, $hyperlink, $text)
 function format_money($amount, $nocurrency = NULL)
 {
 	log_debug("misc", "Executing format_money($amount)");
-
-	// 2 decimal places
-	$amount = sprintf("%0.2f", $amount);
+	
+	//get separators
+	$thousands	= $GLOBALS["config"]["CURRENCY_DEFAULT_THOUSANDS_SEPARATOR"];
+	$decimal	= $GLOBALS["config"]["CURRENCY_DEFAULT_DECIMAL_SEPARATOR"];
 
 	// formatting for readability
-	$amount = number_format($amount, "2", ".", ",");
+	$amount 	= number_format($amount, "2", $decimal, $thousands);
 
 
 	if ($nocurrency)
@@ -416,15 +430,15 @@ function format_money($amount, $nocurrency = NULL)
 	else
 	{
 		// add currency & return
-		$position = sql_get_singlevalue("SELECT value FROM config WHERE name='CURRENCY_DEFAULT_SYMBOL_POSITION'");
+		$position = $GLOBALS["config"]["CURRENCY_DEFAULT_SYMBOL_POSITION"];
 
 		if ($position == "after")
 		{
-			$result = "$amount ". sql_get_singlevalue("SELECT value FROM config WHERE name='CURRENCY_DEFAULT_SYMBOL'");
+			$result = "$amount ". $GLOBALS["config"]["CURRENCY_DEFAULT_SYMBOL"];
 		}
 		else
 		{
-			$result = sql_get_singlevalue("SELECT value FROM config WHERE name='CURRENCY_DEFAULT_SYMBOL'") ."$amount";
+			$result = $GLOBALS["config"]["CURRENCY_DEFAULT_SYMBOL"] ."$amount";
 		}
 
 		return $result;
@@ -437,10 +451,17 @@ function format_money($amount, $nocurrency = NULL)
 
 	returns a provided array as a comma seporated string - very useful for creating value
 	lists to be used in a SQL query.
+
+	Fields
+	array		Array of data.
+	encase		(optional) surrond each value with the char - eg set to " to have a list like "optionA", "optionB", created.
+
+	Returns
+	string		Formatted string
 */
-function format_arraytocommastring($array)
+function format_arraytocommastring($array, $encase = NULL)
 {
-	log_debug("misc", "Executing format_arraytocommastring(Array)");
+	log_write("debug", "misc", "Executing format_arraytocommastring(Array, $encase)");
 
 	$returnstring = "";
 
@@ -448,7 +469,7 @@ function format_arraytocommastring($array)
 
 	for ($i=0; $i < $array_num; $i++)
 	{
-		$returnstring .= $array[$i];
+		$returnstring .= $encase . $array[$i] . $encase;
 
 		if ($i != ($array_num - 1))
 		{
@@ -486,6 +507,63 @@ function time_date_to_timestamp($date)
 		return mktime(0, 0, 0, $date_a[1], $date_a[2] , $date_a[0]);
 	}
 }
+
+
+/*
+	time_bind_to_seconds($bindtime)
+
+	Converts bind formatted time strings into seconds.
+
+	Values
+	bindtime	Format of:
+			#S == seconds
+			#M == minutes	60 seconds
+			#H == Hours	3600 seconds
+			#D == Days	86400 seconds
+			#W == Weeks	604800 seconds
+
+	Returns
+	int		number of seconds
+*/
+
+function time_bind_to_seconds($bindtime)
+{
+	log_write("debug", "misc", "Executing time_bind_to_seconds($bindtime)");
+
+	$bindtime = strtoupper($bindtime);
+
+	// this works by multiplying by the appropate amount and converting
+	// to an integer to strip the alpha characters.
+	//
+	switch (substr($bindtime, -1))
+	{
+		case "M":
+			$bindtime = intval($bindtime) * 60;
+		break;
+
+		case "H":
+			$bindtime = intval($bindtime) * 3600;
+		break;
+
+		case "D":
+			$bindtime = intval($bindtime) * 86400;
+		break;
+
+		case "W":
+			$bindtime = intval($bindtime) * 604800;
+		break;
+
+		case "S":
+		default:
+			intval($bindtime);
+		break;
+	}
+
+	return $bindtime;
+
+} // end of time_bind_to_seconds
+
+
 
 
 /*
@@ -544,7 +622,7 @@ function time_format_humandate($date = NULL)
 	else
 	{
 		// no date supplied - generate current timestamp
-		$timestamp = mktime();
+		$timestamp = time();
 	}
 
 
@@ -578,6 +656,7 @@ function time_format_humandate($date = NULL)
 		break;
 	}
 }
+
 
 
 /*
@@ -768,7 +847,7 @@ function time_calculate_monthdate_last($date = NULL)
 
 	if (!$date)
 	{
-		$timestamp	= mktime();
+		$timestamp	= time();
 		$date		= date("Y-m-d", $timestamp);
 	}
 	else
@@ -974,9 +1053,9 @@ function file_generate_name($basename, $extension = NULL)
 
 	// calculate a temporary filename
 	$uniqueid = 0;
-	while ($complete == "")
+	while (!isset($complete) || ($complete == ""))
 	{
-		$filename = $basename ."_". mktime() ."_$uniqueid" . $extension;
+		$filename = $basename ."_". time() ."_$uniqueid" . $extension;
 
 		if (file_exists($filename))
 		{
@@ -1105,9 +1184,9 @@ function dir_generate_name($basename)
 
 	// calculate a temporary directory name
 	$uniqueid = 0;
-	while ($complete == "")
+	while (!isset($complete) || $complete == "")
 	{
-		$dirname = $basename ."_". mktime() ."_$uniqueid";
+		$dirname = $basename ."_". time() ."_$uniqueid";
 
 		if (file_exists($dirname))
 		{
@@ -1266,6 +1345,35 @@ function ipv4_subnet_members($address_with_cidr, $include_network = FALSE)
 	return $return;
 
 } // end of ipv4_subnet_members
+
+
+
+
+/*
+	ipv4_convert_arpa
+
+	Converts the provided IPv4 address into the arpa format typically
+	used for reverse DNS.
+
+	Fields
+	ipaddress
+
+	Returns
+	0		Invalid IP address
+	string		apra format eg 0.168.192.in-addr.arpa
+*/
+
+function ipv4_convert_arpa( $ipaddress )
+{
+	log_write("debug", "inc_misc", "Executing ipv4_convert_arpa( $ipaddress )");
+
+	$tmp_network = explode(".", $ipaddress);
+
+	$result = $tmp_network[2] .".". $tmp_network[1] .".". $tmp_network[0] .".in-addr.arpa";
+
+	return $result;
+
+} // end of ipv4_convert_arpa
 
 
 
