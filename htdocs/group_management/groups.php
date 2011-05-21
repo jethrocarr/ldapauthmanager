@@ -71,7 +71,8 @@ class page_output
 			apply hide user group map filter
 
 			This is tricky, we do so by fetching an array of all the gidnumbers for users
-			and then running through the results and removing any groups that match gid number.
+			and then running through the results and removing any groups that match gid number and
+			have no users assigned to them.
 		*/
 
 		if (!empty($this->obj_table->filter["filter_hide_user_group_maps"]["defaultvalue"]))
@@ -99,7 +100,11 @@ class page_output
 				// if the gid of the current group is one of the user gids, hide it.
 				if (in_array($this->obj_table->data[$i]["gidnumber"], $user_gid_array))
 				{
-					unset($this->obj_table->data[$i]);
+					// only hide if there are no member users
+					if (empty($this->obj_table->data[$i]["memberuid"]))
+					{
+						unset($this->obj_table->data[$i]);
+					}
 				}
 			}
 		
