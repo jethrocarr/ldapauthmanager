@@ -156,8 +156,6 @@ class ldap_auth_manage_user
 	} // end of verify_username
 
 
-
-
 	/*
 		load_data
 
@@ -898,6 +896,40 @@ class ldap_auth_manage_group
 
 	} // end of verify_id
 
+
+
+	/*
+		verify_groupname
+
+		Checks that the provided group name (cn) exists and returns the ID that it
+		belongs to.
+
+		Results
+		0	Failure to find the ID
+		#	Group ID
+	*/
+
+	function verify_groupname($groupname)
+	{
+		log_debug("ldap_auth_manage_group", "Executing verify_groupname($groupname)");
+
+		// run query against groups
+		$this->obj_ldap->search("cn=". $groupname, array("gidnumber"));
+
+		if ($this->obj_ldap->data_num_rows)
+		{
+			$this->id = $this->obj_ldap->data[0]["gidnumber"][0];
+
+			return $this->id;
+		}
+		else
+		{
+			log_write("debug", "page", "Invalid group ". $this->id ." requested");
+		}
+
+		return 0;
+
+	} // end of verify_groupname
 
 
 

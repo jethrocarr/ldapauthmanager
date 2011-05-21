@@ -92,43 +92,67 @@ if (user_permissions_get('ldapadmins'))
 	}
 
 
+	// check the username isn't taken by another
+	$obj_user_check = New ldap_auth_manage_user;
 
-	if ($mode == "edit")
+	if ($obj_user_check->verify_username($obj_user->data["uid"]))
 	{
-		// if it's changed, check if the user ID has been taken by another user or not
-		if ($orig_uidnumber != $obj_user->data["uidnumber"])
+		// username is in use
+		if ($mode == "edit")
 		{
-			$obj_user_check		= New ldap_auth_manage_user;
-			$obj_user_check->id	= $obj_user->data["uidnumber"];
+			// editing existing, check ID
+			if ($obj_user_check->id != $obj_user->id)
+			{
+				// does not match, another user
+				log_write("error", "process", "The requested username is already in use by another user account");
 
-			if ($obj_user_check->verify_id())
+				error_flag_field("username");
+			}
+		}
+		else
+		{
+			// adding new user, check for any existance
+			log_write("error", "process", "The requested username is already in use by another user account");
+
+			error_flag_field("username");
+		}
+
+	} // end if username in use
+	
+	unset($obj_user_check);
+
+
+
+	// check that the uidnumber isn't taken by another user
+	if (!empty($obj_user->data["uidnumber"]))
+	{
+		$obj_user_check		= New ldap_auth_manage_user;
+		$obj_user_check->id	= $obj_user->data["uidnumber"];
+
+		if ($obj_user_check->verify_id())
+		{
+			if ($mode == "edit")
+			{
+				if ($obj_user_check->id != $obj_user->id)
+				{
+					log_write("error", "process", "The requested UID number is already in use by another user, please select a different one.");
+					error_flag_field("uidnumber");
+				}
+			}
+			else
 			{
 				log_write("error", "process", "The requested UID number is already in use by another user, please select a different one.");
 				error_flag_field("uidnumber");
 			}
-
-			unset($obj_user_check);
 		}
+	
+		unset($obj_user_check);
+
+	} // end if uidnumber set
 
 
-		// if it's changed, check if the group ID has been taken by another group or not
-		/*
-		if ($orig_gidnumber != $obj_user->data["gidnumber"])
-		{
-			$obj_group_check	= New ldap_auth_manage_group;
-			$obj_group_check->id	= $obj_user->data["gidnumber"];
-
-			if ($obj_group_check->verify_id())
-			{
-				log_write("error", "process", "The requested GID number is already in use by another group, please select a different one.");
-				error_flag_field("gidnumber");
-			}
-
-			unset($obj_group_check);
-		}
-		*/
-	}
-
+	// note: we don't check gidnumber here, since we have no way of knowing whether the user *intentionally*
+	// wants to use an existing group or not - eg maybe all users are being mapped to one group.
 
 
 

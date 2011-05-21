@@ -105,6 +105,65 @@ if (user_permissions_get('ldapadmins'))
 	}
 
 
+	// check the groupname isn't taken by another
+	$obj_group_check = New ldap_auth_manage_group;
+
+	if ($obj_group_check->verify_groupname($obj_group->data["cn"]))
+	{
+		// groupname is in use
+		if ($mode == "edit")
+		{
+			// editing existing, check ID
+			if ($obj_group_check->id != $obj_group->id)
+			{
+				// does not match, another group
+				log_write("error", "process", "The requested groupname is already in use");
+
+				error_flag_field("groupname");
+			}
+		}
+		else
+		{
+			// adding new group, check for any existance
+			log_write("error", "process", "The requested groupname is already in use");
+
+			error_flag_field("groupname");
+		}
+
+	} // end if groupname in use
+	
+	unset($obj_group_check);
+
+
+
+	// check that the gidnumber isn't taken by another group
+	if (!empty($obj_group->data["gidnumber"]))
+	{
+		$obj_group_check	= New ldap_auth_manage_group;
+		$obj_group_check->id	= $obj_group->data["gidnumber"];
+
+		if ($obj_group_check->verify_id())
+		{
+			if ($mode == "edit")
+			{
+				if ($obj_group_check->id != $obj_group->id)
+				{
+					log_write("error", "process", "The requested GID number is already in use by another group, please select a different one.");
+					error_flag_field("gidnumber");
+				}
+			}
+			else
+			{
+				log_write("error", "process", "The requested GID number is already in use by another group, please select a different one.");
+				error_flag_field("gidnumber");
+			}
+		}
+	
+		unset($obj_group_check);
+
+	} // end if gidnumber set
+
+
 	
 
 	/*
