@@ -104,6 +104,7 @@ else
 <head>
 	<title>LDAPAuthManager</title>
 	<meta name="copyright" content="(C)Copyright 2010 Amberdms Ltd">
+	<link rel="shortcut icon" href="images/favicon.png" />
 
 <?php
 	// include base CSS file
