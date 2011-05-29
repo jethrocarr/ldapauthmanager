@@ -106,6 +106,14 @@ if (user_permissions_get('ldapadmins'))
 		log_write("error", "process", "At least one member must be assigned to the group.");
 	}
 	
+	
+	// make sure zone configuration is currently enabled!
+	if (!$GLOBALS["config"]["FEATURE_ZONES"])
+	{
+		log_write("error", "process", "In order to use zone configuration, please enable FEATURE_ZONES on the configuration page");
+	}
+
+		
 
 	/*
 		Execute or return to input page with error

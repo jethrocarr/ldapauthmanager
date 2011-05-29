@@ -21,7 +21,12 @@ class page_output
 
 	function check_requirements()
 	{
-		// nothing todo
+		if (!$GLOBALS["config"]["FEATURE_ZONES"])
+		{
+			log_write("error", "page", "In order to use zone configuration, please enable FEATURE_ZONES on the configuration page");
+			return 0;
+		}
+		
 		return 1;
 	}
 

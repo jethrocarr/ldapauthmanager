@@ -43,7 +43,15 @@ if (user_permissions_get('ldapadmins'))
 
 		
 	//// ERROR CHECKING ///////////////////////
-			
+	
+
+	// make sure zone configuration is currently enabled!
+	if (!$GLOBALS["config"]["FEATURE_ZONES"])
+	{
+		log_write("error", "process", "In order to use zone configuration, please enable FEATURE_ZONES on the configuration page");
+	}
+
+
 	if (error_check())
 	{	
 		$_SESSION["error"]["form"]["zone_delete"] = "failed";
