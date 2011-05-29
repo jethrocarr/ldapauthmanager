@@ -12,20 +12,26 @@ dc: example
 objectClass: top
 objectClass: domain
 
-dn: ou=auth, dc=example, dc=com
+dn: ou=auth,dc=example,dc=com
 objectClass: top
 objectClass: organizationalUnit
 ou: auth
 
-dn: ou=People, ou=auth, dc=example, dc=com
+dn: ou=People,ou=auth,dc=example,dc=com
 objectClass: top
 objectClass: organizationalUnit
 ou: People
 
-dn: ou=Group, ou=auth, dc=example, dc=com
+dn: ou=Group,ou=auth,dc=example,dc=com
 objectClass: top
 objectClass: organizationalUnit
 ou: Group
+
+dn: ou=Zones,ou=auth,dc=example,dc=amberdms,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: Zones
+
 
 # Inital User
 dn: uid=setup,ou=People,ou=auth,dc=example,dc=com

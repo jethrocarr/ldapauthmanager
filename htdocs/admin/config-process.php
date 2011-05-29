@@ -21,6 +21,7 @@ if (user_permissions_get("ldapadmins"))
 	// fetch all the data
 	$data["AUTO_INT_UID"]			= security_form_input_predefined("int", "AUTO_INT_UID", 1, "");
 	$data["AUTO_INT_GID"]			= security_form_input_predefined("int", "AUTO_INT_GID", 1, "");
+	$data["FEATURE_ZONES"]			= security_form_input_predefined("checkbox", "FEATURE_ZONES", 0, "");
 	$data["FEATURE_RADIUS"]			= security_form_input_predefined("checkbox", "FEATURE_RADIUS", 0, "");
 	$data["AUTH_USERPASSWORD_TYPE"]		= security_form_input_predefined("any", "AUTH_USERPASSWORD_TYPE", 1, "");
 

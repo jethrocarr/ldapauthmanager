@@ -1225,4 +1225,267 @@ class ldap_auth_manage_group
 
 
 
+/*
+	
+	CLASS LDAP_AUTH_MANAGE_ZONE
+
+	Provides functions for quering, creating, updating and deleting
+	authentication zones from an LDAP database.
+*/
+class ldap_auth_manage_zone
+{
+	var $obj_ldap;		// LDAP object
+
+	var $data;
+
+
+	/*
+		Constructor
+	*/
+	function ldap_auth_manage_zone()
+	{
+		/*
+			Init LDAP database connection
+		*/
+		$this->obj_ldap = New ldap_query;
+
+		// connect to LDAP server
+		if (!$this->obj_ldap->connect())
+		{
+			log_write("error", "user_auth", "An error occurred in the authentication backend, please contact your system administrator");
+			return -1;
+		}
+
+		// set base_dn to run zone lookups in
+		$this->obj_ldap->srvcfg["base_dn"] = "ou=Zones,". $GLOBALS["config"]["ldap_dn"];
+	}
+
+
+
+	/*
+		list_zones
+
+		Fetches a list of zones with gidnumber and zonename information, saves into the $this->data array.
+
+		Returns
+		0	Failure to query LDAP
+		1	Success
+	*/
+	function list_zones()
+	{
+		log_debug("ldap_auth_manage_zone", "Executing list_zones()");
+
+
+		// fetch all zones
+		if ($this->obj_ldap->search("cn=*", array("cn")))
+		{
+			log_debug("ldap_auth_manager_zone", "Found a total of ". $this->obj_ldap->data_num_rows ." zones");
+
+			$this->data = array();
+
+			for ($i=0; $i < $this->obj_ldap->data_num_rows; $i++)
+			{
+				// set values
+				$this->data[$i]["cn"]		= $this->obj_ldap->data[$i]["cn"][0];
+			}
+
+			return 1;
+		}
+
+		return 0;
+	}
+
+
+
+	/*
+		verify_zonename
+
+		Checks that the provided zone name (cn) exists - there is no such thing as an id, so we
+		simply return failure/success.
+
+		Results
+		0	Failure - unused/non-existant zonename
+		1	Success - valid in use zonename
+	*/
+
+	function verify_zonename($zonename)
+	{
+		log_debug("ldap_auth_manage_zone", "Executing verify_zonename($zonename)");
+
+		// run query against zones
+		$this->obj_ldap->search("cn=". $zonename, array("cn"));
+
+		if ($this->obj_ldap->data_num_rows)
+		{
+			return 1;
+		}
+		else
+		{
+			log_write("debug", "page", "Invalid zone ". $this->data["cn"] ." requested");
+		}
+
+		return 0;
+
+	} // end of verify_zonename
+
+
+
+	/*
+		load_data
+
+		Load all the information regarding the selected zone.
+
+		Results
+		0	Failure
+		1	Success
+	*/
+	function load_data()
+	{
+		log_debug("ldap_auth_manage_zone", "Executing load_data()");
+
+		// fetch all zone attributes
+		$this->obj_ldap->search("cn=". $this->data["cn"]);
+
+		if ($this->obj_ldap->data_num_rows)
+		{
+			// get values
+			$this->data["cn"]		= $this->obj_ldap->data[0]["cn"][0];
+
+			// get members
+			for ($i=0; $i < $this->obj_ldap->data[0]["uniquemember"]["count"]; $i++)
+			{
+				$this->data["uniqueMember"][$i] = $this->obj_ldap->data[0]["uniquemember"][$i];
+			}
+
+			return 1;
+		}
+
+		return 0;
+	}
+
+
+	/*
+		create
+
+		Creates a new LDAP zone. This function is typically called automatically by the update() function.
+
+		Results
+		0	Failure
+		1	Success
+	*/
+	function create()
+	{
+		log_write("debug", "ldap_auth_manage_zone", "Executing create()");
+
+
+		/*
+			Create new LDAP zone object
+		*/
+		
+		// set objectclasses
+		$this->data["objectclass"]	= NULL;
+		$this->data["objectclass"][]	= "top";
+		$this->data["objectclass"][]	= "groupOfUniqueNames";
+
+		// set DN
+		$this->obj_ldap->record_dn = "cn=". $this->data["cn"];
+
+		// create record
+		$this->obj_ldap->data = $this->data;
+
+		if (!$this->obj_ldap->record_create())
+		{
+			return 0;
+		}
+
+
+		// success
+		return 1;
+
+	} // end of create()
+
+
+
+	/*
+		update
+
+		Update the attributes for the selected zone record in LDAP
+		
+		Dependencies
+		Call load_data before executing this function.
+
+		Results
+		0	Failure
+		1	Success
+	*/
+	function update()
+	{
+		log_write("debug", "ldap_auth_manage_zone", "Executing update()");
+
+		// create zone if they don't already exist
+		$this->obj_ldap->search("cn=". $this->data["cn"], array("cn"));
+
+		if (!$this->obj_ldap->data_num_rows)
+		{
+			if (!$this->create())
+			{
+				log_write("error", "ldap_auth_manage_zone", "An error occuring whilst attempting to add a new zone record to LDAP");
+
+				return 0;
+			}
+		}
+
+
+		// set the record to manipulate
+		$this->obj_ldap->record_dn	= "cn=". $this->data["cn"] ."";
+
+		// update attributes
+		$this->obj_ldap->data = $this->data;
+
+		if ($this->obj_ldap->record_update())
+		{
+			return 1;
+		}
+
+		// failure
+		return 0;
+
+	} // end of update()
+
+
+
+	/*
+		delete
+
+		Deletes the selected zone.
+		
+		Dependencies
+		This function requires the cn to be set, so you may need to run load_data() first.
+
+		Returns
+		0	Failure
+		1	Success
+	*/
+	function delete()
+	{
+		log_write("debug", "ldap_auth_manage_zone", "Executing delete()");
+
+		// set the record to manipulate
+		$this->obj_ldap->record_dn	= "cn=". $this->data["cn"] ."";
+
+		// delete
+		if ($this->obj_ldap->record_delete())
+		{
+			return 1;
+		}
+
+		// failure
+		return 0;
+
+	} // end of delete()
+
+} // end of class ldap_auth_manage_zone
+
+
+
 ?>

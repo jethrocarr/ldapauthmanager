@@ -52,7 +52,14 @@ class page_output
 		$structure["options"]["no_translate_fieldname"]	= "yes";
 		$this->obj_form->add_input($structure);
 
-		// radius options
+		// feature options
+		$structure = NULL;
+		$structure["fieldname"]				= "FEATURE_ZONES";
+		$structure["type"]				= "checkbox";
+		$structure["options"]["label"]			= "Enable to provide zone configuration options";
+		$structure["options"]["no_translate_fieldname"]	= "yes";
+		$this->obj_form->add_input($structure);
+
 		$structure = NULL;
 		$structure["fieldname"]				= "FEATURE_RADIUS";
 		$structure["type"]				= "checkbox";
@@ -150,7 +157,7 @@ class page_output
 		
 		// define subforms
 		$this->obj_form->subforms["config_seed"]		= array("AUTO_INT_UID", "AUTO_INT_GID");
-		$this->obj_form->subforms["config_features"]		= array("FEATURE_RADIUS", "FEATURE_RADIUS_MIKROTIK", "FEATURE_RADIUS_MAXVENDOR");
+		$this->obj_form->subforms["config_features"]		= array("FEATURE_ZONES", "FEATURE_RADIUS", "FEATURE_RADIUS_MIKROTIK", "FEATURE_RADIUS_MAXVENDOR");
 		$this->obj_form->subforms["config_credentials"]		= array("AUTH_USERPASSWORD_INFO", "AUTH_USERPASSWORD_TYPE");
 		$this->obj_form->subforms["config_security"]		= array("BLACKLIST_ENABLE", "BLACKLIST_LIMIT");
 		$this->obj_form->subforms["config_dateandtime"]		= array("DATEFORMAT", "TIMEZONE_DEFAULT");
