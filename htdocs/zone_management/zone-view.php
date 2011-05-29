@@ -78,7 +78,12 @@ class page_output
 		$structure["type"]		= "input";
 		$structure["options"]["req"]	= "yes";
 		$this->obj_form->add_input($structure);
-							
+	
+		$structure = NULL;
+		$structure["fieldname"] 	= "zonepath";
+		$structure["type"]		= "text";
+		$this->obj_form->add_input($structure);
+									
 
 		// hidden section
 		$structure = NULL;
@@ -96,7 +101,7 @@ class page_output
 	
 
 		// define subforms
-		$this->obj_form->subforms["zone_view"]		= array("zonename");
+		$this->obj_form->subforms["zone_view"]		= array("zonename", "zonepath");
 
 
 
@@ -144,6 +149,7 @@ class page_output
 			if ($this->obj_zone->load_data())
 			{
 				$this->obj_form->structure["zonename"]["defaultvalue"]		= $this->obj_zone->data["cn"];
+				$this->obj_form->structure["zonepath"]["defaultvalue"]		= "cn=". $this->obj_zone->data["cn"] .",ou=Zones,". $GLOBALS["config"]["ldap_dn"];
 
 				// check all member users
 				if (isset($this->obj_zone->data["uniqueMember"]))
