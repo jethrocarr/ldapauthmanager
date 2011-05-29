@@ -1,6 +1,6 @@
 Summary: LDAPAuthManager open source LDAP authentication management interface
 Name: ldapauthmanager
-Version: 1.2.1
+Version: 1.3.0
 Release: 1%{?dist}
 License: AGPLv3
 URL: http://www.amberdms.com/ldapauthmanager
@@ -137,6 +137,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon May 30 2011 Jethro Carr <jethro.carr@amberdms.com> 1.3.0_beta_1
+- Addition of zone functionality
 * Wed Mar 25 2011 Jethro Carr <jethro.carr@amberdms.com> 1.2.1
 - Minor bug fixes, addition of favicon
 * Thu Mar 10 2011 Jethro Carr <jethro.carr@amberdms.com> 1.2.0
