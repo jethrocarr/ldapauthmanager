@@ -137,6 +137,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Mar 19 2012 Jethro Carr <jethro.carr@amberdms.com> 1.3.0
+- Logging bug fixes and stable release
 * Mon May 30 2011 Jethro Carr <jethro.carr@amberdms.com> 1.3.0_beta_1
 - Addition of zone functionality
 * Wed Mar 25 2011 Jethro Carr <jethro.carr@amberdms.com> 1.2.1
