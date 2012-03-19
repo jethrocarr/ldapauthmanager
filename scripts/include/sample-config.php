@@ -27,6 +27,16 @@ $config["api_auth_key"]		= "ultrahighsecretkey";
 $config["log_file"]		= "/var/log/ldap";
 
 
+/*
+	Lock File
+
+	Used to prevent clashes when multiple instances are accidently run.
+*/
+
+$config["lock_file"]		= "/var/lock/ldapauthmanager_lock";
+
+
+
 
 
 // force debugging on for all users + scripts
