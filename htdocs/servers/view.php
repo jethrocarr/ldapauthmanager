@@ -29,7 +29,12 @@ class page_output
 		$this->obj_menu_nav = New menu_nav;
 
 		$this->obj_menu_nav->add_item("Adjust Server Configuration", "page=servers/view.php&id=". $this->obj_ldap_server->id ."", TRUE);
-		$this->obj_menu_nav->add_item("View Server-Specific Logs", "page=servers/logs.php&id=". $this->obj_ldap_server->id ."");
+		
+		if ($GLOBALS["config"]["FEATURE_LOGS_ENABLE"])
+		{
+			$this->obj_menu_nav->add_item("View Server-Specific Logs", "page=servers/logs.php&id=". $this->obj_ldap_server->id ."");
+		}
+
 		$this->obj_menu_nav->add_item("Delete Server", "page=servers/delete.php&id=". $this->obj_ldap_server->id ."");
 	}
 
@@ -132,20 +137,27 @@ class page_output
 				$this->obj_form->structure["server_description"]["defaultvalue"]	= $this->obj_ldap_server->data["server_description"];
 				$this->obj_form->structure["api_auth_key"]["defaultvalue"]		= $this->obj_ldap_server->data["api_auth_key"];
 
-				if ($this->obj_ldap_server->data["sync_status_log"])
+				if ($GLOBALS["config"]["FEATURE_LOGS_ENABLE"])
 				{
-					if ($this->obj_ldap_server->data["sync_status_log"] == 1)
+					if ($this->obj_ldap_server->data["sync_status_log"])
 					{
-						$this->obj_form->structure["sync_status_log"]["defaultvalue"]	= "<span class=\"table_highlight_important\">". lang_trans("status_log_unsynced") ."</span> No logs exist for this server!";
+						if ($this->obj_ldap_server->data["sync_status_log"] == 1)
+						{
+							$this->obj_form->structure["sync_status_log"]["defaultvalue"]	= "<span class=\"table_highlight_important\">". lang_trans("status_log_unsynced") ."</span> No logs exist for this server!";
+						}
+						else
+						{
+							$this->obj_form->structure["sync_status_log"]["defaultvalue"]	= "<span class=\"table_highlight_important\">". lang_trans("status_log_unsynced") ."</span> Logging appears stale, last synced on ". time_format_humandate($this->obj_ldap_server->data["api_sync_log"]) ." ". date("H:i:s", $this->obj_ldap_server->data["api_sync_log"]) ."";
+						}
 					}
 					else
 					{
-						$this->obj_form->structure["sync_status_log"]["defaultvalue"]	= "<span class=\"table_highlight_important\">". lang_trans("status_log_unsynced") ."</span> Logging appears stale, last synced on ". time_format_humandate($this->obj_ldap_server->data["api_sync_log"]) ." ". date("H:i:s", $this->obj_ldap_server->data["api_sync_log"]) ."";
+						$this->obj_form->structure["sync_status_log"]["defaultvalue"]		= "<span class=\"table_highlight_open\">". lang_trans("status_log_synced") ."</span> Last log message delivered on ". time_format_humandate($this->obj_ldap_server->data["api_sync_log"]) ." ". date("H:i:s", $this->obj_ldap_server->data["api_sync_log"]) ."";
 					}
 				}
 				else
-				{
-					$this->obj_form->structure["sync_status_log"]["defaultvalue"]		= "<span class=\"table_highlight_open\">". lang_trans("status_log_synced") ."</span> Last log message delivered on ". time_format_humandate($this->obj_ldap_server->data["api_sync_log"]) ." ". date("H:i:s", $this->obj_ldap_server->data["api_sync_log"]) ."";
+				{			
+					$this->obj_form->structure["sync_status_log"]["defaultvalue"] = "<span class=\"table_highlight_disabled\">". lang_trans("status_disabled") ."</span>";
 				}
 			}
 		}

@@ -43,6 +43,13 @@ class page_output
 
 	function check_requirements()
 	{
+		// make sure logging is enabled
+		if (!$GLOBALS["config"]["FEATURE_LOGS_ENABLE"])
+		{
+			log_write("error", "page_output", "Logging functionality is disabled, adjust FEATURE_LOGS_ENABLE on the configuration page to fix.");
+			return 0;
+		}
+
 		// make sure the server is valid
 		if (!$this->obj_ldap_server->verify_id())
 		{
