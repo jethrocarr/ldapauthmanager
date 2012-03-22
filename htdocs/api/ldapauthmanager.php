@@ -94,6 +94,12 @@ class api_ldapauthmanager
 	{
 		log_write("debug", "api_ldapauthmanager", "Executing log_write ($log_timestamp, $log_type, $log_contents");
 
+		// refuse authentication if logging disabled
+		if (!$GLOBALS["config"]["FEATURE_LOGS_ENABLE"])
+		{
+			throw new SoapFault("Sender", "FEATURE_DISABLED");
+		}
+
 		// sanitise input
 		$log_timestamp	= @security_script_input_predefined("int", $log_timestamp);
 		$log_type	= @security_script_input_predefined("any", $log_type);
