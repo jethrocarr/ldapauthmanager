@@ -1,6 +1,6 @@
 Summary: LDAPAuthManager open source LDAP authentication management interface
 Name: ldapauthmanager
-Version: 1.3.0
+Version: 1.4.0
 Release: 1%{?dist}
 License: AGPLv3
 URL: http://www.amberdms.com/ldapauthmanager
@@ -57,6 +57,10 @@ ln -s %{_sysconfdir}/ldapauthmanager/config-scripts.php $RPM_BUILD_ROOT%{_datadi
 mkdir -p $RPM_BUILD_ROOT/etc/init.d/
 install -m 755 resources/ldapauthmanager_logpush.rcsysinit $RPM_BUILD_ROOT/etc/init.d/ldapauthmanager_logpush
 
+# install the cronfile
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.d/
+install -m 644 resources/ldapauthmanager-scripts.cron $RPM_BUILD_ROOT%{_sysconfdir}/cron.d/ldapauthmanager-scripts
+
 # install the apache configuration file
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d
 install -m 644 resources/ldapauthmanager-httpdconfig.conf $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/ldapauthmanager.conf
@@ -86,7 +90,8 @@ if [ $1 == 0 ];
 then
 	# upgrading existing rpm
 	echo "Restarting logging process..."
-	/etc/init.d/ldapauthmanager_logpush restart
+	/etc/init.d/ldapauthmanager_logpush stop
+	/etc/init.d/ldapauthmanager_logpush start
 fi
 
 
@@ -132,11 +137,14 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %config %dir %{_sysconfdir}/ldapauthmanager
 %config(noreplace) %{_sysconfdir}/ldapauthmanager/config-scripts.php
+%config %dir %{_sysconfdir}/cron.d/ldapauthmanager-scripts
 %{_datadir}/ldapauthmanager/scripts
 /etc/init.d/ldapauthmanager_logpush
 
 
 %changelog
+* Thu Mar 22 2012 Jethro Carr <jethro.carr@amberdms.com> 1.4.0
+- Log rentention & log cronjob addition
 * Mon Mar 19 2012 Jethro Carr <jethro.carr@amberdms.com> 1.3.0
 - Logging bug fixes and stable release
 * Mon May 30 2011 Jethro Carr <jethro.carr@amberdms.com> 1.3.0_beta_1

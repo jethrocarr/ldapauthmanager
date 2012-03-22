@@ -1,0 +1,9 @@
+#
+# LDAPAUTHMANAGER SCRIPTS INTEGRATION
+# Cron Jobs
+#
+
+# PHP slowly leaks memory, restart the process weekly to prevent it getting too large over months
+01 01 * * 0 root /etc/init.d/ldapauthmanager_logpush restart >> /dev/null 2>&1
+
+
