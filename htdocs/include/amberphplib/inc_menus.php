@@ -304,18 +304,25 @@ class menu_main
 
 						if ($data["topic"])
 						{
+
+							$link_prefix = "index.php?page=";
+							if(strtolower(substr($data['link'], 0, 4)) == 'http') {
+								log_debug("menu_main", "found http in link: " . $data['link']);
+								$link_prefix = '';
+							}
+
 							// highlight the entry, if it's the parent of the next sub menu, or if this is a sub menu.
 							if (isset($this->menu_order[$i + 1]) && $this->menu_order[$i + 1] == $data["topic"])
 							{
-								print "<li><a class=\"menu_current\" href=\"index.php?page=". $data["link"] ."\" title=". lang_trans($data["topic"]) .">". lang_trans($data["topic"]) ."</a></li>";
+								print "<li><a class=\"menu_current\" href=\"" . $link_prefix . $data["link"] ."\" title=". lang_trans($data["topic"]) .">". lang_trans($data["topic"]) ."</a></li>";
 							}
 							elseif ($data["link"] == $this->page)
 							{
-								print "<li><a class=\"menu_current\" href=\"index.php?page=". $data["link"] ."\" title=". lang_trans($data["topic"]) .">". lang_trans($data["topic"]) ."</a></li>";
+								print "<li><a class=\"menu_current\" href=\"" . $link_prefix . $data["link"] ."\" title=". lang_trans($data["topic"]) .">". lang_trans($data["topic"]) ."</a></li>";
 							}
 							else
 							{
-								print "<li><a href=\"index.php?page=". $data["link"] ."\" title=". lang_trans($data["topic"]) .">". lang_trans($data["topic"]) ."</a></li>";
+								print "<li><a href=\"" . $link_prefix . $data["link"] ."\" title=". lang_trans($data["topic"]) .">". lang_trans($data["topic"]) ."</a></li>";
 							}
 						}
 					}
