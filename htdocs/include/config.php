@@ -32,6 +32,13 @@ ini_set('memory_limit', '32M');			// note that ldapauthmanager doesn't need much
 
 
 
+
+/*
+	Inherit User Configuration
+*/
+require("config-settings.php");
+
+
 /*
 	Session Management
 */
@@ -39,7 +46,10 @@ ini_set('memory_limit', '32M');			// note that ldapauthmanager doesn't need much
 if ($_SERVER['SERVER_NAME'])
 {
 	// proper session variables
-	session_name("ldapauthmanager");
+	if(!isset($config['session_name'])) {
+	       $config['session_name'] = 'ldapauthmanager';
+	}
+	session_name($config['session_name']);
 	session_start();
 }
 else
@@ -48,16 +58,6 @@ else
 	$GLOBALS["_SESSION"]	= array();
 	$_SESSION["mode"]	= "cli";
 }
-
-
-
-/*
-	Inherit User Configuration
-*/
-require("config-settings.php");
-
-
-
 
 
 /*
