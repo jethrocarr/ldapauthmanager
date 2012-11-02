@@ -27,6 +27,12 @@ if (user_permissions_get("ldapadmins"))
 
 	$data["BLACKLIST_ENABLE"]		= security_form_input_predefined("any", "BLACKLIST_ENABLE", 0, "");
 	$data["BLACKLIST_LIMIT"]		= security_form_input_predefined("int", "BLACKLIST_LIMIT", 1, "");
+
+	$data["PASSWORD_LENGTH_MIN"]            = security_form_input_predefined("int", "PASSWORD_LENGTH_MIN", 0, "");
+	$data["PASSWORD_REQUIRE_ALPHA"]         = security_form_input_predefined("checkbox", "PASSWORD_REQUIRE_ALPHA", 0, "");
+	$data["PASSWORD_REQUIRE_NUMERIC"]        = security_form_input_predefined("checkbox", "PASSWORD_REQUIRE_NUMERIC", 0, "");
+	$data["PASSWORD_REQUIRE_CAPS"]          = security_form_input_predefined("checkbox", "PASSWORD_REQUIRE_CAPS", 0, "");
+	$data["PASSWORD_REQUIRE_SPECIAL"]        = security_form_input_predefined("checkbox", "PASSWORD_REQUIRE_SPECIAL", 0, "");
 	
 	$data["DATEFORMAT"]			= security_form_input_predefined("any", "DATEFORMAT", 1, "");
 	$data["TIMEZONE_DEFAULT"]		= security_form_input_predefined("any", "TIMEZONE_DEFAULT", 1, "");

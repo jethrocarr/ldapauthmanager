@@ -116,6 +116,43 @@ class page_output
 		$structure["options"]["no_translate_fieldname"]	= "yes";
 		$this->obj_form->add_input($structure);
 
+		// password policy
+		$structure = NULL;
+		$structure["fieldname"]				= "PASSWORD_LENGTH_MIN";
+		$structure["type"]				= "input";
+		$structure["options"]["label"]			= " Set to minimum length required for password. Set to 0 to disable";
+		$structure["options"]["no_translate_fieldname"]	= "yes";
+		$this->obj_form->add_input($structure);
+
+		$structure = NULL;
+		$structure["fieldname"]				= "PASSWORD_REQUIRE_ALPHA";
+		$structure["type"]				= "checkbox";
+		$structure["options"]["label"]			= "Enable to require password with at least 1 alpha character";
+		$structure["options"]["no_translate_fieldname"]	= "yes";
+		$this->obj_form->add_input($structure);
+
+		$structure = NULL;
+		$structure["fieldname"]				= "PASSWORD_REQUIRE_NUMERIC";
+		$structure["type"]				= "checkbox";
+		$structure["options"]["label"]			= "Enable to require password with at least 1 numeric character";
+		$structure["options"]["no_translate_fieldname"]	= "yes";
+		$this->obj_form->add_input($structure);
+
+		$structure = NULL;
+		$structure["fieldname"]				= "PASSWORD_REQUIRE_CAPS";
+		$structure["type"]				= "checkbox";
+		$structure["options"]["label"]			= "Enable to require password with at least 1 capitalised character";
+		$structure["options"]["no_translate_fieldname"]	= "yes";
+		$this->obj_form->add_input($structure);
+
+		$structure = NULL;
+		$structure["fieldname"]				= "PASSWORD_REQUIRE_SPECIAL";
+		$structure["type"]				= "checkbox";
+		$structure["options"]["label"]			= "Enable to require password with at least 1 special character";
+		$structure["options"]["no_translate_fieldname"]	= "yes";
+		$this->obj_form->add_input($structure);
+
+
 		
 		// logging options
 		$structure = NULL;
@@ -176,6 +213,7 @@ class page_output
 		$this->obj_form->subforms["config_features"]		= array("FEATURE_ZONES", "FEATURE_RADIUS", "FEATURE_RADIUS_MIKROTIK", "FEATURE_RADIUS_MAXVENDOR");
 		$this->obj_form->subforms["config_credentials"]		= array("AUTH_USERPASSWORD_INFO", "AUTH_USERPASSWORD_TYPE");
 		$this->obj_form->subforms["config_security"]		= array("BLACKLIST_ENABLE", "BLACKLIST_LIMIT");
+		$this->obj_form->subforms["config_password_policy"]	= array("PASSWORD_LENGTH_MIN", "PASSWORD_REQUIRE_ALPHA", "PASSWORD_REQUIRE_NUMERIC", "PASSWORD_REQUIRE_CAPS", "PASSWORD_REQUIRE_SPECIAL");
 		$this->obj_form->subforms["config_dateandtime"]		= array("DATEFORMAT", "TIMEZONE_DEFAULT");
 		$this->obj_form->subforms["config_logging"]		= array("FEATURE_LOGS_ENABLE", "LOG_RETENTION_PERIOD", "LOG_UPDATE_INTERVAL");
 		$this->obj_form->subforms["submit"]			= array("submit");
