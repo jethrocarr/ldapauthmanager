@@ -50,30 +50,6 @@ class user_auth
 	}
 
 
-	/*
-	   * Checks for alternative session database store (shared)
-	   */
-	function getSessionDatabase($sql_obj) {
-
-		global $config;
-
-		// default to storing user session data in this applications database
-		if(!isset($config['session_store'])) {
-			return $sql_obj;	
-		}
-
-
-		if(!$sql_obj->session_init("mysql", $config['session_store']['db_host'], $config['session_store']['db_name'], $config['session_store']['db_user'], $config['session_store']['db_pass'])) {
-			log_write("error",'process', 'unable to reach alternative session store database');
-			return false;
-		}
-
-		return $sql_obj;
-
-
-	}
-
-
 
 	/*
 		check_online()
@@ -104,7 +80,6 @@ class user_auth
 		{
 			// get user session data
 			$sql_session_obj		= New sql_query;
-			$sql_session_obj		= $this->getSessionDatabase($sql_session_obj);
 			$sql_session_obj->string 	= "SELECT id, time FROM `users_sessions` WHERE authkey='" . $_SESSION["user"]["authkey"] . "' AND ipaddress='" . $_SERVER["REMOTE_ADDR"] . "' LIMIT 1";
 			$sql_session_obj->execute();
 
@@ -124,7 +99,6 @@ class user_auth
 					{
 						// update time field
 						$sql_obj		= New sql_query;
-						$sql_obj		= $this->getSessionDatabase($sql_obj);
 						$sql_obj->string	= "UPDATE `users_sessions` SET time='$time' WHERE authkey='". $_SESSION["user"]["authkey"] ."' LIMIT 1";
 						$sql_obj->execute();
 					}
@@ -802,7 +776,6 @@ class user_auth
 		$time_expired = $time - 43200;
 
 		$sql_obj		= New sql_query;
-		$sql_obj		= $this->getSessionDatabase($sql_obj);
 		$sql_obj->string	= "DELETE FROM `users_sessions` WHERE time < '$time_expired'";
 		$sql_obj->execute();
 
@@ -813,7 +786,6 @@ class user_auth
 			log_write("debug", "inc_users", "User account does not permit concurrent logins, removing all old sessions");
 
 			$sql_obj		= New sql_query;
-			$sql_obj		= $this->getSessionDatabase($sql_obj);
 			$sql_obj->string	= "DELETE FROM `users_sessions` WHERE userid='". $userid ."'";
 			$sql_obj->execute();
 		}
@@ -821,7 +793,6 @@ class user_auth
 
 		// create session entry for user login
 		$sql_obj		= New sql_query;
-		$sql_obj		= $this->getSessionDatabase($sql_obj);
 		$sql_obj->string	= "INSERT INTO `users_sessions` (userid, authkey, ipaddress, time) VALUES ('$userid', '$authkey', '$ipaddress', '$time')";
 		$sql_obj->execute();
 
@@ -872,7 +843,6 @@ class user_auth
 		{
 			// remove session entry from DB
 			$sql_obj		= New sql_query;
-			$sql_obj		= $this->getSessionDatabase($sql_obj);
 			$sql_obj->string	= "DELETE FROM `users_sessions` WHERE authkey='" . $_SESSION["user"]["authkey"] . "' LIMIT 1";
 			$sql_obj->execute();
 		}

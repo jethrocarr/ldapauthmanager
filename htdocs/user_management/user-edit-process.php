@@ -82,40 +82,6 @@ if (user_permissions_get('ldapadmins'))
 			$_SESSION["error"]["message"][]			= "Your passwords do not match!";
 			$_SESSION["error"]["password-error"]		= 1;
 			$_SESSION["error"]["password_confirm-error"]	= 1;
-		} else {
-
-			// no point doing these checks unless the password and password confirm match
-
-			if ($GLOBALS["config"]["PASSWORD_LENGTH_MIN"] > 0)
-			{
-				$data["password"]               = security_form_input_predefined("any", "password", $GLOBALS["config"]["PASSWORD_LENGTH_MIN"], '');
-			}
-
-			if ($GLOBALS["config"]["PASSWORD_REQUIRE_ALPHA"])
-			{
-			        $data["password"]               = security_form_input_predefined("password_require_alpha", "password", 0, '');
-			}
-
-			if ($GLOBALS["config"]["PASSWORD_REQUIRE_NUMERIC"])
-			{
-			        $data["password"]               = security_form_input_predefined("password_require_numeric", "password", 0, '');
-			}
-
-			if ($GLOBALS["config"]["PASSWORD_REQUIRE_CAPS"])
-			{
-			        $data["password"]               = security_form_input_predefined("password_require_caps", "password", 0, '');
-			}
-
-			if ($GLOBALS["config"]["PASSWORD_REQUIRE_SPECIAL"])
-			{
-			        $data["password"]               = security_form_input_predefined("password_require_special", "password", 0, '');
-			}
-			
-			// highlight the confirmation password if there is an error with the password
-			if(isset($_SESSION["error"]["password-error"]) && $_SESSION["error"]["password-error"] == 1) 
-			{
-				$_SESSION["error"]["password_confirm-error"]	= 1;
-			}
 		}
 
 		// generate new password if required		

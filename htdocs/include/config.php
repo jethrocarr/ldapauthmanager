@@ -17,10 +17,10 @@ $GLOBALS["config"] = array();
 
 // define the application details
 $GLOBALS["config"]["app_name"]			= "ldapauthmanager";
-$GLOBALS["config"]["app_version"]		= "1.4.0_p1";
+$GLOBALS["config"]["app_version"]		= "1.4.0";
 
 // define the schema version required
-$GLOBALS["config"]["schema_version"]		= "20121102";
+$GLOBALS["config"]["schema_version"]		= "20120322";
 
 
 
