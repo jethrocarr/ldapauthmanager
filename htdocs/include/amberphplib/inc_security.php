@@ -159,6 +159,39 @@ function security_form_input_predefined ($type, $valuename, $numchar, $errormsg)
 	// run through the actions for each item type
 	switch ($type)
 	{
+
+		case "password_require_alpha":
+			$expression = "#[A-z]+#";
+			if($errormsg == "")
+			{
+				$errormsg = language_translate_string($_SESSION["user"]["lang"], $type);
+			}
+		break;
+
+		case "password_require_numeric":
+			$expression = "#[0-9]+#";
+			if($errormsg == "")
+			{
+				$errormsg = language_translate_string($_SESSION["user"]["lang"], $type);
+			}
+		break;
+
+		case "password_require_caps":
+			$expression = "#[A-Z]+#";
+			if($errormsg == "")
+			{
+				$errormsg = language_translate_string($_SESSION["user"]["lang"], $type);
+			}
+		break;
+
+		case "password_require_special":
+			$expression = "#\W+#";
+			if($errormsg == "")
+			{
+				$errormsg = language_translate_string($_SESSION["user"]["lang"], $type);
+			}
+		break;
+
 		case "any":
 			$expression = "/^[\S\s]*$/";
 		break;
