@@ -430,6 +430,7 @@ class user_auth
 
 						if ($matches[1])
 						{
+							$matches[1] = strtoupper($matches[1]); //Capitalize to make switch below case-insensitive
 							switch ($matches[1])
 							{
 								case "SSHA":
