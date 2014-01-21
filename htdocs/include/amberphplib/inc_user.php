@@ -461,7 +461,7 @@ class user_auth
 									}
 								break;
 
-								case "crypt":
+								case "CRYPT":
 
 									//
 									// CRYPT: Used as the default by Linux servers, often a MD5 hash rather than original crypt, however
