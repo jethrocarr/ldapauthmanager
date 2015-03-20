@@ -5,7 +5,7 @@
 For more information including source code, issue tracker and documentation
 visit the project homepage:
 
-https://projects.jethrocarr.com/p/oss-ldapauthmanager/
+https://github.com/jethrocarr/ldapauthmanager
 
 
 ## Introduction
