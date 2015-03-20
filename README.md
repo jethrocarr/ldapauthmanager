@@ -1,6 +1,6 @@
 # LDAPAuthManager
 
-* Please note: I consider this project deprecated, the code remains here for reference *
+* Please note: I consider this project deprecated, the code remains here for reference. FreeIPA is probably a better replacement for most needs. *
 
 
 ## Project Homepage
