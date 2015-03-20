@@ -1,5 +1,8 @@
 # LDAPAuthManager
 
+* Please note: I consider this project deprecated, the code remains here for reference *
+
+
 ## Project Homepage
 
 For more information including source code, issue tracker and documentation
